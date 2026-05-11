@@ -1,0 +1,147 @@
+'use client'
+
+import { useState } from 'react'
+import { useQuery } from '@tanstack/react-query'
+import { api } from '@/lib/api'
+import { Card } from '@/components/ui/card'
+import { Badge } from '@/components/ui/badge'
+import { Skeleton } from '@/components/ui/skeleton'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Download, Trash2, Search, Filter } from 'lucide-react'
+import { useToastStore } from '@/stores/toast-store'
+import type { GenerationJob } from '@vfs/shared-types'
+
+export default function DressingPage() {
+  const [filter, setFilter] = useState('')
+  const { addToast } = useToastStore()
+
+  const { data, isLoading } = useQuery({
+    queryKey: ['dressing'],
+    queryFn: async () => {
+      const res = await api.get<GenerationJob[]>('/dressing/?status=done')
+      return res
+    },
+  })
+
+  const jobs = data?.data || []
+
+  const handleDelete = async (jobId: string) => {
+    try {
+      await api.delete(`/dressing/${jobId}`)
+      addToast({ type: 'success', title: 'Supprimé' })
+    } catch {
+      addToast({ type: 'error', title: 'Erreur', message: 'Impossible de supprimer' })
+    }
+  }
+
+  const handleDownload = (url: string, jobId: string) => {
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `vfs-${jobId.slice(0, 8)}.webp`
+    a.click()
+  }
+
+  return (
+    <div className="animate-fade-in">
+      <div className="mb-8">
+        <h1 className="font-display text-3xl tracking-tight text-text-primary">Dressing</h1>
+        <p className="mt-1 text-text-secondary">Votre galerie de looks générés</p>
+      </div>
+
+      {/* Filters */}
+      <div className="mb-6 flex gap-2">
+        <div className="relative flex-1">
+          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-text-tertiary" />
+          <Input
+            placeholder="Rechercher..."
+            value={filter}
+            onChange={(e) => setFilter(e.target.value)}
+            className="pl-9"
+          />
+        </div>
+        <Button variant="secondary" size="md" iconLeft={<Filter className="h-4 w-4" />}>
+          Filtres
+        </Button>
+      </div>
+
+      {/* Grid */}
+      {isLoading ? (
+        <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4">
+          {Array.from({ length: 8 }).map((_, i) => (
+            <Skeleton key={i} variant="image" />
+          ))}
+        </div>
+      ) : jobs.length === 0 ? (
+        <div className="flex flex-col items-center justify-center py-20 text-center">
+          <div className="mb-4 text-5xl">👔</div>
+          <h2 className="text-xl font-heading text-text-primary">Créez votre premier look</h2>
+          <p className="mt-2 text-text-secondary">
+            Rendez-vous dans le Studio pour essayer un vêtement
+          </p>
+          <Button variant="primary" className="mt-6" onClick={() => window.location.href = '/studio'}>
+            Aller au Studio
+          </Button>
+        </div>
+      ) : (
+        <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4">
+          {jobs
+            .filter((j) =>
+              !filter || j.id?.toLowerCase().includes(filter.toLowerCase())
+            )
+            .map((job) => (
+              <div
+                key={job.id}
+                className="group relative overflow-hidden rounded-lg border border-border-default bg-bg-surface transition-all duration-200 hover:border-border-strong hover:shadow-md animate-card-in"
+              >
+                {job.result_url ? (
+                  <img
+                    src={job.result_url}
+                    alt="Try-on"
+                    className="aspect-square w-full object-cover"
+                    loading="lazy"
+                  />
+                ) : (
+                  <div className="aspect-square w-full bg-bg-elevated" />
+                )}
+
+                {/* Overlay actions */}
+                <div className="absolute inset-x-0 bottom-0 translate-y-full bg-gradient-to-t from-bg-base/95 to-transparent p-3 pt-8 transition-transform duration-200 group-hover:translate-y-0">
+                  <div className="flex items-center justify-between">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      iconLeft={<Download className="h-3.5 w-3.5" />}
+                      onClick={(e) => {
+                        e.preventDefault()
+                        job.result_url && handleDownload(job.result_url, job.id)
+                      }}
+                    >
+                      DL
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      iconLeft={<Trash2 className="h-3.5 w-3.5" />}
+                      onClick={(e) => {
+                        e.preventDefault()
+                        handleDelete(job.id)
+                      }}
+                    >
+                      Suppr.
+                    </Button>
+                  </div>
+                </div>
+
+                {/* Status badge */}
+                <Badge
+                  status={job.status}
+                  className="absolute right-2 top-2"
+                />
+              </div>
+            ))}
+        </div>
+      )}
+    </div>
+  )
+}
