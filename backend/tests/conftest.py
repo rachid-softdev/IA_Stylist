@@ -1,6 +1,14 @@
+import os
+
+# Must be set BEFORE any app imports to ensure settings are loaded
+os.environ.setdefault("DATABASE_URL", "postgresql+asyncpg://vfs:vfs@localhost:5432/vfs_test")
+os.environ.setdefault("JWT_SECRET", "test-jwt-secret-not-for-production")
+os.environ.setdefault("ENVIRONMENT", "test")
+
 import pytest
 import pytest_asyncio
 import asyncpg
+from httpx import AsyncClient, ASGITransport
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncSession
 from sqlalchemy.schema import CreateTable
 from sqlalchemy.dialects import postgresql
@@ -54,3 +62,12 @@ async def test_user(db_session: AsyncSession):
     await db_session.commit()
     await db_session.refresh(user)
     return user
+
+
+@pytest_asyncio.fixture(scope="function")
+async def client():
+    """Create an async test client for the FastAPI app."""
+    from app.main import app
+    transport = ASGITransport(app=app)
+    async with AsyncClient(transport=transport, base_url="http://test") as ac:
+        yield ac
