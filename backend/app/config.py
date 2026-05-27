@@ -26,6 +26,9 @@ class Settings(BaseSettings):
     JWT_ACCESS_TOKEN_EXPIRE_MINUTES: int = 60
     JWT_REFRESH_TOKEN_EXPIRE_DAYS: int = 30
 
+    # CSRF
+    CSRF_SECRET: str = ""  # Optional; falls back to JWT_SECRET
+
     # Cloudflare R2
     R2_ACCESS_KEY: str = ""
     R2_SECRET_KEY: str = ""

@@ -21,7 +21,7 @@ class AuthMiddleware(BaseHTTPMiddleware):
             return await call_next(request)
         
         # Skip auth for public endpoints
-        public_paths = ["/v1/auth/login", "/v1/auth/signup", "/v1/auth/refresh"]
+        public_paths = ["/v1/auth/login", "/v1/auth/signup", "/v1/auth/refresh", "/v1/auth/csrf-token"]
         if request.url.path in public_paths:
             return await call_next(request)
         

@@ -12,6 +12,7 @@ from app.middleware.logging import LoggingMiddleware
 from app.services.redis import init_redis
 from app.middleware.auth_middleware import AuthMiddleware
 from app.middleware.rate_limit import RateLimitMiddleware
+from app.middleware.csrf_middleware import CSRFMiddleware
 from app.routers import auth, upload, generate, credits, dressing, brands, catalog, analytics, webhooks, stylist
 
 settings = get_settings()
@@ -55,13 +56,15 @@ app = FastAPI(
 )
 
 # Middleware — Starlette wraps inside-out, so LAST registered = outermost = runs FIRST
-# Desired execution: CORS → Auth → RateLimit → Logging → handler
-# So register in reverse: Logging (innermost) → RateLimit → Auth → CORS (outermost)
+# Desired execution: CORS → CSRF → Auth → RateLimit → Logging → handler
+# So register in reverse: Logging (innermost) → RateLimit → Auth → CSRF → CORS (outermost)
 app.add_middleware(LoggingMiddleware)
 
 app.add_middleware(RateLimitMiddleware)
 
 app.add_middleware(AuthMiddleware)
+
+app.add_middleware(CSRFMiddleware)
 
 app.add_middleware(
     CORSMiddleware,
