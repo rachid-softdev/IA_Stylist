@@ -31,7 +31,7 @@ class Settings(BaseSettings):
     R2_SECRET_KEY: str = ""
     R2_ENDPOINT: str = ""
     R2_BUCKET: str = "vfs-storage"
-    R2_PUBLIC_URL: str = "https://cdn.vfs.ai"
+    R2_PUBLIC_URL: str = ""  # Must be set via .env (e.g. https://cdn.vfs.ai)
 
     # AI Services
     FAL_KEY: str = ""

@@ -14,8 +14,8 @@ export function cn(...inputs: ClassValue[]) {
 export function formatBytes(bytes: number, decimals = 1): string {
   if (bytes <= 0) return '0 B'
   const k = 1024
-  const sizes = ['B', 'KB', 'MB', 'GB']
-  const i = Math.floor(Math.log(bytes) / Math.log(k))
+  const sizes = ['B', 'KB', 'MB', 'GB', 'TB', 'PB']
+  const i = Math.min(Math.floor(Math.log(bytes) / Math.log(k)), sizes.length - 1)
   return `${parseFloat((bytes / Math.pow(k, i)).toFixed(decimals))} ${sizes[i]}`
 }
 
@@ -37,17 +37,18 @@ export function formatDuration(ms: number): string {
 export function formatRelativeTime(date: string | Date): string {
   const now = new Date()
   const then = new Date(date)
-  const diffMs = now.getTime() - then.getTime()
+  const diffMs = Math.abs(now.getTime() - then.getTime())
+  const suffix = now >= then ? 'ago' : 'from now'
   const diffSeconds = Math.floor(diffMs / 1000)
   const diffMinutes = Math.floor(diffSeconds / 60)
   const diffHours = Math.floor(diffMinutes / 60)
   const diffDays = Math.floor(diffHours / 24)
 
-  if (diffSeconds < 60) return 'just now'
-  if (diffMinutes < 60) return `${diffMinutes}m ago`
-  if (diffHours < 24) return `${diffHours}h ago`
-  if (diffDays < 7) return `${diffDays}d ago`
-  if (diffDays < 30) return `${Math.floor(diffDays / 7)}w ago`
+  if (diffSeconds < 60) return now >= then ? 'just now' : 'soon'
+  if (diffMinutes < 60) return `${diffMinutes}m ${suffix}`
+  if (diffHours < 24) return `${diffHours}h ${suffix}`
+  if (diffDays < 7) return `${diffDays}d ${suffix}`
+  if (diffDays < 30) return `${Math.floor(diffDays / 7)}w ${suffix}`
   try {
     return then.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' })
   } catch {

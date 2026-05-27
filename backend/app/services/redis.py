@@ -13,14 +13,26 @@ async def get_redis() -> aioredis.Redis:
     """Get a Redis connection from the shared pool (singleton)."""
     global _pool
     if _pool is None:
-        settings = get_settings()
-        _pool = aioredis.ConnectionPool.from_url(
-            settings.REDIS_URL,
-            max_connections=10,
-            decode_responses=True,
-        )
-        logger.info("Redis connection pool created")
+        await init_redis()
     return aioredis.Redis(connection_pool=_pool)
+
+
+async def init_redis() -> None:
+    """Initialize the Redis connection pool eagerly (call on startup).
+    
+    This verifies connectivity by pinging Redis, allowing the application
+    to log warnings early if Redis is unavailable.
+    """
+    global _pool
+    settings = get_settings()
+    _pool = aioredis.ConnectionPool.from_url(
+        settings.REDIS_URL,
+        max_connections=10,
+        decode_responses=True,
+    )
+    r = aioredis.Redis(connection_pool=_pool)
+    await r.ping()
+    logger.info("Redis connection pool created and verified")
 
 
 async def close_redis() -> None:

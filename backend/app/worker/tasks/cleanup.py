@@ -1,10 +1,14 @@
+import logging
 from app.worker.celery_app import celery_app
 from app.worker.tasks.utils import run_async
+
+logger = logging.getLogger(__name__)
 
 
 @celery_app.task
 def cleanup_temp_files():
     """Periodic task: clean up temporary uploads older than 24h."""
+    logger.warning("TODO: cleanup_temp_files not yet implemented")
 
     async def _run():
         from datetime import datetime, timedelta

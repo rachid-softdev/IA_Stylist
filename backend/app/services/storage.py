@@ -1,5 +1,6 @@
 import uuid
 import boto3
+import botocore.exceptions
 from botocore.config import Config
 from app.config import get_settings
 
@@ -70,7 +71,9 @@ def delete_file(r2_key: str) -> None:
 
 def get_public_url(r2_key: str) -> str:
     """Get the public URL for a stored file."""
-    return f"{settings.R2_PUBLIC_URL}/{r2_key}"
+    if settings.R2_PUBLIC_URL:
+        return f"{settings.R2_PUBLIC_URL}/{r2_key}"
+    return r2_key
 
 
 def ensure_bucket_exists():
@@ -78,5 +81,9 @@ def ensure_bucket_exists():
     client = _get_client()
     try:
         client.head_bucket(Bucket=settings.R2_BUCKET)
-    except Exception:
-        client.create_bucket(Bucket=settings.R2_BUCKET)
+    except botocore.exceptions.ClientError as e:
+        error_code = e.response.get("Error", {}).get("Code", "")
+        if error_code == "404" or error_code == "NoSuchBucket":
+            client.create_bucket(Bucket=settings.R2_BUCKET)
+        else:
+            raise  # Real error (auth, network, etc.)

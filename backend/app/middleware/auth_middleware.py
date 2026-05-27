@@ -1,5 +1,6 @@
 """Auth middleware that decodes JWT and sets request state for downstream middleware."""
 import logging
+from jose import jwt as jose_jwt
 from fastapi import Request, HTTPException, status
 from starlette.middleware.base import BaseHTTPMiddleware
 from app.config import get_settings
@@ -38,8 +39,6 @@ class AuthMiddleware(BaseHTTPMiddleware):
         
         if token:
             try:
-                from jose import jwt as jose_jwt
-                
                 settings = get_settings()
                 payload = jose_jwt.decode(
                     token,

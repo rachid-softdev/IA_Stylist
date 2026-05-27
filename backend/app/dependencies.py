@@ -6,6 +6,7 @@ from typing import Optional
 from app.db.session import get_db
 from app.config import get_settings, Settings
 from app.models.user import User
+from app.models.brand import BrandMember
 
 
 async def get_settings_dep() -> Settings:
@@ -83,6 +84,8 @@ async def get_current_user_from_request(
 
     # Store user on request state for middleware access
     request.state.current_user = user
+    request.state.current_user_id = user.id
+    request.state.current_user_plan = user.plan
 
     return user
 
@@ -137,8 +140,6 @@ async def get_current_brand_admin(
     
     The brand_id is extracted from the request path parameters.
     """
-    from app.models.brand import BrandMember
-
     brand_id = request.path_params.get("brand_id")
     if not brand_id:
         raise HTTPException(

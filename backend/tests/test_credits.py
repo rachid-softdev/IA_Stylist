@@ -72,3 +72,22 @@ async def test_transaction_history(db_session: AsyncSession, test_user: User):
 
     transactions = await service.get_transaction_history(test_user.id)
     assert len(transactions) == 3
+
+
+@pytest.mark.asyncio
+async def test_refund_with_for_update(db_session: AsyncSession, test_user: User):
+    """Refund with FOR UPDATE lock must work atomically."""
+    service = CreditService(db_session)
+    await service.check_and_deduct(test_user.id, 5, "generation")
+    await service.refund(test_user.id, 5, "refund")
+    balance = await service.get_balance(test_user.id)
+    assert balance == 10
+
+
+@pytest.mark.asyncio
+async def test_add_credits_with_for_update(db_session: AsyncSession, test_user: User):
+    """Add credits with FOR UPDATE lock must work atomically."""
+    service = CreditService(db_session)
+    await service.add_credits(test_user.id, 20, "purchase")
+    balance = await service.get_balance(test_user.id)
+    assert balance == 30
