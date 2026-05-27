@@ -12,7 +12,7 @@ export function cn(...inputs: ClassValue[]) {
  * Format a number of bytes to a human-readable string
  */
 export function formatBytes(bytes: number, decimals = 1): string {
-  if (bytes === 0) return '0 B'
+  if (bytes <= 0) return '0 B'
   const k = 1024
   const sizes = ['B', 'KB', 'MB', 'GB']
   const i = Math.floor(Math.log(bytes) / Math.log(k))
@@ -48,7 +48,11 @@ export function formatRelativeTime(date: string | Date): string {
   if (diffHours < 24) return `${diffHours}h ago`
   if (diffDays < 7) return `${diffDays}d ago`
   if (diffDays < 30) return `${Math.floor(diffDays / 7)}w ago`
-  return then.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' })
+  try {
+    return then.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' })
+  } catch {
+    return then.toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' })
+  }
 }
 
 /**

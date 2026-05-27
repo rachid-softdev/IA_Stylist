@@ -2,7 +2,6 @@ from datetime import datetime
 from typing import Optional
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, update
-from sqlalchemy.dialects.postgresql import insert
 
 from app.models.user import User
 from app.models.credit import CreditTransaction
@@ -17,17 +16,7 @@ class CreditService:
         balance = result.scalar_one_or_none()
         return balance or 0
 
-    async def check_and_reserve(self, user_id: str, amount: int) -> bool:
-        """Atomically check and reserve credits. Returns True if sufficient."""
-        user = await self.db.execute(
-            select(User).where(User.id == user_id).with_for_update()
-        )
-        user = user.scalar_one_or_none()
-        if not user or user.credits < amount:
-            return False
-        return True
-
-    async def deduct(
+    async def check_and_deduct(
         self,
         user_id: str,
         amount: int,
@@ -35,30 +24,42 @@ class CreditService:
         job_id: Optional[str] = None,
         description: Optional[str] = None,
     ) -> bool:
-        """Deduct credits and log transaction. Returns True on success."""
-        # Atomic deduction
-        result = await self.db.execute(
-            update(User)
-            .where(User.id == user_id, User.credits >= amount)
-            .values(credits=User.credits - amount)
-            .returning(User.credits)
-        )
-        new_balance = result.scalar_one_or_none()
-
-        if new_balance is None:
-            return False
-
-        # Log transaction
-        transaction = CreditTransaction(
-            user_id=user_id,
-            amount=-amount,
-            type=transaction_type,
-            job_id=job_id,
-            description=description or f"{transaction_type}: {amount} credit(s)",
-        )
-        self.db.add(transaction)
-        await self.db.commit()
-
+        """Atomically check and deduct credits in a single transaction.
+        
+        Uses SELECT ... FOR UPDATE to prevent race conditions between
+        concurrent requests. The lock is held until the transaction commits.
+        
+        Returns True if credits were deducted, False if insufficient.
+        """
+        # Begin a nested transaction for atomicity
+        async with self.db.begin():
+            # Lock the user row
+            user = await self.db.execute(
+                select(User).where(User.id == user_id).with_for_update()
+            )
+            user = user.scalar_one_or_none()
+            
+            if not user or user.credits < amount:
+                return False
+            
+            # Deduct credits
+            await self.db.execute(
+                update(User)
+                .where(User.id == user_id)
+                .values(credits=User.credits - amount)
+            )
+            
+            # Log transaction
+            transaction = CreditTransaction(
+                user_id=user_id,
+                amount=-amount,
+                type=transaction_type,
+                job_id=job_id,
+                description=description or f"{transaction_type}: {amount} credit(s)",
+            )
+            self.db.add(transaction)
+        
+        # Transaction is committed at this point (async with db.begin() auto-commits)
         return True
 
     async def refund(
@@ -70,19 +71,19 @@ class CreditService:
         description: Optional[str] = None,
     ) -> None:
         """Refund credits to user."""
-        await self.db.execute(
-            update(User).where(User.id == user_id).values(credits=User.credits + amount)
-        )
+        async with self.db.begin():
+            await self.db.execute(
+                update(User).where(User.id == user_id).values(credits=User.credits + amount)
+            )
 
-        transaction = CreditTransaction(
-            user_id=user_id,
-            amount=amount,
-            type=transaction_type,
-            job_id=job_id,
-            description=description or f"Refund: {amount} credit(s)",
-        )
-        self.db.add(transaction)
-        await self.db.commit()
+            transaction = CreditTransaction(
+                user_id=user_id,
+                amount=amount,
+                type=transaction_type,
+                job_id=job_id,
+                description=description or f"Refund: {amount} credit(s)",
+            )
+            self.db.add(transaction)
 
     async def add_credits(
         self,
@@ -92,18 +93,18 @@ class CreditService:
         description: Optional[str] = None,
     ) -> None:
         """Add credits to user."""
-        await self.db.execute(
-            update(User).where(User.id == user_id).values(credits=User.credits + amount)
-        )
+        async with self.db.begin():
+            await self.db.execute(
+                update(User).where(User.id == user_id).values(credits=User.credits + amount)
+            )
 
-        transaction = CreditTransaction(
-            user_id=user_id,
-            amount=amount,
-            type=transaction_type,
-            description=description or f"Credit {transaction_type}: +{amount}",
-        )
-        self.db.add(transaction)
-        await self.db.commit()
+            transaction = CreditTransaction(
+                user_id=user_id,
+                amount=amount,
+                type=transaction_type,
+                description=description or f"Credit {transaction_type}: +{amount}",
+            )
+            self.db.add(transaction)
 
     async def get_transaction_history(
         self,

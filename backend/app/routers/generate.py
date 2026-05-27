@@ -30,25 +30,17 @@ async def create_try_on(
     """Create an image try-on generation job."""
     credit_service = CreditService(db)
 
-    # Check credits
-    has_credits = await credit_service.check_and_reserve(user.id, 1)
-    if not has_credits:
+    # Atomically check and deduct credits
+    deducted = await credit_service.check_and_deduct(
+        user.id, 1, "generation", description="Try-On Image"
+    )
+    if not deducted:
         raise HTTPException(
             status_code=status.HTTP_402_PAYMENT_REQUIRED,
             detail={
                 "code": "INSUFFICIENT_CREDITS",
                 "message": "Not enough credits. Please upgrade your plan.",
             },
-        )
-
-    # Deduct credits (pending — will be confirmed or refunded after job)
-    deducted = await credit_service.deduct(
-        user.id, 1, "generation", description="Try-On Image"
-    )
-    if not deducted:
-        raise HTTPException(
-            status_code=status.HTTP_402_PAYMENT_REQUIRED,
-            detail={"code": "INSUFFICIENT_CREDITS", "message": "Not enough credits"},
         )
 
     # Validate garment if from catalog
@@ -162,16 +154,17 @@ async def create_video(
     """Create a video generation job (3 credits)."""
     credit_service = CreditService(db)
 
-    has_credits = await credit_service.check_and_reserve(user.id, 3)
-    if not has_credits:
+    deducted = await credit_service.check_and_deduct(
+        user.id, 3, "generation", description="Video generation"
+    )
+    if not deducted:
         raise HTTPException(
             status_code=status.HTTP_402_PAYMENT_REQUIRED,
-            detail={"code": "INSUFFICIENT_CREDITS", "message": "Not enough credits for video"},
+            detail={
+                "code": "INSUFFICIENT_CREDITS",
+                "message": "Not enough credits for video generation. Please upgrade your plan.",
+            },
         )
-
-    deducted = await credit_service.deduct(user.id, 3, "generation", description="Video generation")
-    if not deducted:
-        raise HTTPException(status_code=status.HTTP_402_PAYMENT_REQUIRED)
 
     job = GenerationJob(
         user_id=user.id,
@@ -205,16 +198,17 @@ async def create_lookbook(
     credits_needed = len(body.garment_ids)
     credit_service = CreditService(db)
 
-    has_credits = await credit_service.check_and_reserve(user.id, credits_needed)
-    if not has_credits:
-        raise HTTPException(
-            status_code=status.HTTP_402_PAYMENT_REQUIRED,
-            detail={"code": "INSUFFICIENT_CREDITS", "message": "Not enough credits for lookbook"},
-        )
-
-    await credit_service.deduct(
+    deducted = await credit_service.check_and_deduct(
         user.id, credits_needed, "generation", description=f"Lookbook: {credits_needed} items"
     )
+    if not deducted:
+        raise HTTPException(
+            status_code=status.HTTP_402_PAYMENT_REQUIRED,
+            detail={
+                "code": "INSUFFICIENT_CREDITS",
+                "message": "Not enough credits for lookbook generation.",
+            },
+        )
 
     job = GenerationJob(
         user_id=user.id,

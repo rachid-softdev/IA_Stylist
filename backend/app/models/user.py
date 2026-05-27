@@ -31,6 +31,6 @@ class UserProfile(BaseModel):
         String(36), ForeignKey("users.id", ondelete="CASCADE"), unique=True
     )
     photos: Mapped[Optional[dict]] = mapped_column(JSONB, nullable=True)
-    metadata: Mapped[Optional[dict]] = mapped_column(JSONB, nullable=True)
+    profile_metadata: Mapped[Optional[dict]] = mapped_column("metadata", JSONB, nullable=True)
 
     user: Mapped["User"] = relationship("User", back_populates="profile")

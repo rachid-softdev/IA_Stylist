@@ -1,11 +1,10 @@
-from celery import Task
 from app.worker.celery_app import celery_app
+from app.worker.tasks.utils import run_async
 
 
 @celery_app.task
 def cleanup_temp_files():
     """Periodic task: clean up temporary uploads older than 24h."""
-    import asyncio
 
     async def _run():
         from datetime import datetime, timedelta
@@ -15,13 +14,12 @@ def cleanup_temp_files():
         # In production: query DB for old uploads and delete from R2
         pass
 
-    asyncio.run(_run())
+    run_async(_run())
 
 
 @celery_app.task
 def cleanup_old_jobs():
     """Periodic task: clean up old job results based on plan retention."""
-    import asyncio
 
     async def _run():
         from datetime import datetime, timedelta
@@ -38,4 +36,4 @@ def cleanup_old_jobs():
                 await db.delete(job)
             await db.commit()
 
-    asyncio.run(_run())
+    run_async(_run())

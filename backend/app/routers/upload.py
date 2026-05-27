@@ -1,9 +1,11 @@
 from fastapi import APIRouter, Depends, HTTPException, status
+from app.config import get_settings
 from app.dependencies import get_current_user
 from app.models.user import User
 from app.schemas.common import PresignedUrlRequest, PresignedUrlResponse, UploadConfirmRequest
 from app.services.storage import generate_presigned_upload_url, get_public_url
 
+settings = get_settings()
 router = APIRouter()
 
 
@@ -13,6 +15,14 @@ async def get_presigned_url(
     user: User = Depends(get_current_user),
 ):
     """Generate a presigned URL for client-side file upload."""
+    if body.size is not None and body.size > settings.MAX_UPLOAD_SIZE_MB * 1024 * 1024:
+        raise HTTPException(
+            status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
+            detail={
+                "code": "FILE_TOO_LARGE",
+                "message": f"File size exceeds {settings.MAX_UPLOAD_SIZE_MB}MB limit",
+            },
+        )
     upload_url, r2_key, public_url = generate_presigned_upload_url(
         user_id=user.id,
         folder=body.folder,

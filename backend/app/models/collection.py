@@ -1,18 +1,13 @@
 from typing import Optional
 from sqlalchemy import String, Boolean, ForeignKey, DateTime, UniqueConstraint, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from sqlalchemy.orm import DeclarativeBase
+from app.models.base import BaseModel
 from datetime import datetime
 
 
-class Base(DeclarativeBase):
-    pass
-
-
-class Collection(Base):
+class Collection(BaseModel):
     __tablename__ = "collections"
 
-    id: Mapped[str] = mapped_column(String(36), primary_key=True)
     user_id: Mapped[str] = mapped_column(
         String(36), ForeignKey("users.id", ondelete="CASCADE"), nullable=False
     )
@@ -29,7 +24,7 @@ class Collection(Base):
     )
 
 
-class CollectionItem(Base):
+class CollectionItem(BaseModel):
     __tablename__ = "collection_items"
     __table_args__ = (UniqueConstraint("collection_id", "job_id"),)
 

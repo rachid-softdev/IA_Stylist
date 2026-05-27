@@ -1,7 +1,10 @@
 import json
+import logging
 from typing import Optional
 import httpx
 from app.config import get_settings
+
+logger = logging.getLogger(__name__)
 
 settings = get_settings()
 
@@ -44,6 +47,8 @@ async def push_job_update(
                 },
                 timeout=5.0,
             )
-    except Exception:
-        # Silently fail — frontend has polling fallback
-        pass
+    except Exception as e:
+        logger.warning(
+            "WebSocket push failed: user=%s job=%s status=%s error=%s",
+            user_id, job_id, status, str(e),
+        )

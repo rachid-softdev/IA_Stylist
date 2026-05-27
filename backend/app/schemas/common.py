@@ -236,6 +236,7 @@ class PresignedUrlRequest(BaseModel):
     filename: str
     content_type: str = Field(..., pattern="^(image/jpeg|image/png|image/webp)$")
     folder: str = Field(..., pattern="^(uploads/raw|uploads/garments|avatars)$")
+    size: Optional[int] = Field(default=None, ge=1, le=10 * 1024 * 1024, description="File size in bytes (max 10MB)")
 
 
 class PresignedUrlResponse(BaseModel):
@@ -260,6 +261,7 @@ class AnalyticsOverviewResponse(BaseModel):
     returns_delta: float
     cost_savings: float
     savings_delta: float
+    is_estimate: bool = True
 
 
 class TimelineDataPoint(BaseModel):

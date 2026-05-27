@@ -54,6 +54,7 @@ async def get_overview(
             "returns_delta": 0.0,
             "cost_savings": total_tryons * 150.0,
             "savings_delta": 0.0,
+            "is_estimate": True,
         },
         "top_skus": top_skus,
     }
