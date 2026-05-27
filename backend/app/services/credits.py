@@ -31,35 +31,32 @@ class CreditService:
         
         Returns True if credits were deducted, False if insufficient.
         """
-        # Begin a nested transaction for atomicity
-        async with self.db.begin():
-            # Lock the user row
-            user = await self.db.execute(
-                select(User).where(User.id == user_id).with_for_update()
-            )
-            user = user.scalar_one_or_none()
-            
-            if not user or user.credits < amount:
-                return False
-            
-            # Deduct credits
-            await self.db.execute(
-                update(User)
-                .where(User.id == user_id)
-                .values(credits=User.credits - amount)
-            )
-            
-            # Log transaction
-            transaction = CreditTransaction(
-                user_id=user_id,
-                amount=-amount,
-                type=transaction_type,
-                job_id=job_id,
-                description=description or f"{transaction_type}: {amount} credit(s)",
-            )
-            self.db.add(transaction)
+        # Lock the user row
+        user = await self.db.execute(
+            select(User).where(User.id == user_id).with_for_update()
+        )
+        user = user.scalar_one_or_none()
         
-        # Transaction is committed at this point (async with db.begin() auto-commits)
+        if not user or user.credits < amount:
+            return False
+        
+        # Deduct credits
+        await self.db.execute(
+            update(User)
+            .where(User.id == user_id)
+            .values(credits=User.credits - amount)
+        )
+        
+        # Log transaction
+        transaction = CreditTransaction(
+            user_id=user_id,
+            amount=-amount,
+            type=transaction_type,
+            job_id=job_id,
+            description=description or f"{transaction_type}: {amount} credit(s)",
+        )
+        self.db.add(transaction)
+
         return True
 
     async def refund(
@@ -71,19 +68,25 @@ class CreditService:
         description: Optional[str] = None,
     ) -> None:
         """Refund credits to user."""
-        async with self.db.begin():
-            await self.db.execute(
-                update(User).where(User.id == user_id).values(credits=User.credits + amount)
-            )
+        user = await self.db.execute(
+            select(User).where(User.id == user_id).with_for_update()
+        )
+        user = user.scalar_one_or_none()
+        if not user:
+            raise ValueError(f"User {user_id} not found")
 
-            transaction = CreditTransaction(
-                user_id=user_id,
-                amount=amount,
-                type=transaction_type,
-                job_id=job_id,
-                description=description or f"Refund: {amount} credit(s)",
-            )
-            self.db.add(transaction)
+        await self.db.execute(
+            update(User).where(User.id == user_id).values(credits=User.credits + amount)
+        )
+
+        transaction = CreditTransaction(
+            user_id=user_id,
+            amount=amount,
+            type=transaction_type,
+            job_id=job_id,
+            description=description or f"Refund: {amount} credit(s)",
+        )
+        self.db.add(transaction)
 
     async def add_credits(
         self,
@@ -93,18 +96,24 @@ class CreditService:
         description: Optional[str] = None,
     ) -> None:
         """Add credits to user."""
-        async with self.db.begin():
-            await self.db.execute(
-                update(User).where(User.id == user_id).values(credits=User.credits + amount)
-            )
+        user = await self.db.execute(
+            select(User).where(User.id == user_id).with_for_update()
+        )
+        user = user.scalar_one_or_none()
+        if not user:
+            raise ValueError(f"User {user_id} not found")
 
-            transaction = CreditTransaction(
-                user_id=user_id,
-                amount=amount,
-                type=transaction_type,
-                description=description or f"Credit {transaction_type}: +{amount}",
-            )
-            self.db.add(transaction)
+        await self.db.execute(
+            update(User).where(User.id == user_id).values(credits=User.credits + amount)
+        )
+
+        transaction = CreditTransaction(
+            user_id=user_id,
+            amount=amount,
+            type=transaction_type,
+            description=description or f"Credit {transaction_type}: +{amount}",
+        )
+        self.db.add(transaction)
 
     async def get_transaction_history(
         self,

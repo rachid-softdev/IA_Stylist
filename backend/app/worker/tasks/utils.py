@@ -1,5 +1,8 @@
 """Utility functions for Celery task async execution."""
 import asyncio
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 def run_async(coro):
@@ -14,5 +17,9 @@ def run_async(coro):
         # No running loop — standard case
         return asyncio.run(coro)
     else:
-        # A loop is already running — use run_until_complete
-        return loop.run_until_complete(coro)
+        # A loop is already running — fire-and-forget via create_task
+        logger.warning(
+            "Event loop already running in Celery worker — "
+            "scheduling coroutine as background task"
+        )
+        loop.create_task(coro)

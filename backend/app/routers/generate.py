@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, status, Query
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, desc
+from sqlalchemy import select, desc, func
 from typing import Optional
 
 from app.dependencies import get_current_user, get_current_brand_admin
@@ -30,49 +30,48 @@ async def create_try_on(
     """Create an image try-on generation job."""
     credit_service = CreditService(db)
 
-    # Atomically check and deduct credits
-    deducted = await credit_service.check_and_deduct(
-        user.id, 1, "generation", description="Try-On Image"
-    )
-    if not deducted:
-        raise HTTPException(
-            status_code=status.HTTP_402_PAYMENT_REQUIRED,
-            detail={
-                "code": "INSUFFICIENT_CREDITS",
-                "message": "Not enough credits. Please upgrade your plan.",
-            },
+    async with db.begin():
+        # Atomically check and deduct credits
+        deducted = await credit_service.check_and_deduct(
+            user.id, 1, "generation", description="Try-On Image"
         )
-
-    # Validate garment if from catalog
-    if body.garment_id:
-        result = await db.execute(select(Garment).where(Garment.id == body.garment_id))
-        garment = result.scalar_one_or_none()
-        if not garment:
-            # Refund if garment not found
-            await credit_service.refund(user.id, 1, "refund", description="Garment not found")
+        if not deducted:
             raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail={"code": "GARMENT_NOT_FOUND", "message": "Garment not found"},
+                status_code=status.HTTP_402_PAYMENT_REQUIRED,
+                detail={
+                    "code": "INSUFFICIENT_CREDITS",
+                    "message": "Not enough credits. Please upgrade your plan.",
+                },
             )
-        body.garment_image = garment.image_url
 
-    # Create job in DB
-    job = GenerationJob(
-        user_id=user.id,
-        job_type="image",
-        status="queued",
-        garment_id=body.garment_id,
-        input_params={
-            "model_photo": body.model_photo_id,
-            "garment_image": body.garment_image,
-            "category": body.category,
-            "num_inference_steps": body.num_inference_steps,
-            "seed": body.seed,
-        },
-        credits_used=1,
-    )
-    db.add(job)
-    await db.commit()
+        # Validate garment if from catalog
+        if body.garment_id:
+            result = await db.execute(select(Garment).where(Garment.id == body.garment_id))
+            garment = result.scalar_one_or_none()
+            if not garment:
+                raise HTTPException(
+                    status_code=status.HTTP_404_NOT_FOUND,
+                    detail={"code": "GARMENT_NOT_FOUND", "message": "Garment not found"},
+                )
+            body.garment_image = garment.image_url
+
+        # Create job in DB
+        job = GenerationJob(
+            user_id=user.id,
+            job_type="image",
+            status="queued",
+            garment_id=body.garment_id,
+            input_params={
+                "model_photo": body.model_photo_id,
+                "garment_image": body.garment_image,
+                "category": body.category,
+                "num_inference_steps": body.num_inference_steps,
+                "seed": body.seed,
+            },
+            credits_used=1,
+        )
+        db.add(job)
+
     await db.refresh(job)
 
     # Enqueue Celery task
@@ -130,10 +129,13 @@ async def list_jobs(
     query = query.order_by(desc(GenerationJob.created_at))
 
     # Get total
-    count_result = await db.execute(
-        select(GenerationJob).where(GenerationJob.user_id == user.id)
+    count_query = select(func.count(GenerationJob.id)).where(
+        GenerationJob.user_id == user.id
     )
-    total = len(count_result.scalars().all())
+    if status_filter:
+        count_query = count_query.where(GenerationJob.status == status_filter)
+    count_result = await db.execute(count_query)
+    total = count_result.scalar() or 0
 
     offset = (page - 1) * page_size
     result = await db.execute(query.offset(offset).limit(page_size))
@@ -154,27 +156,28 @@ async def create_video(
     """Create a video generation job (3 credits)."""
     credit_service = CreditService(db)
 
-    deducted = await credit_service.check_and_deduct(
-        user.id, 3, "generation", description="Video generation"
-    )
-    if not deducted:
-        raise HTTPException(
-            status_code=status.HTTP_402_PAYMENT_REQUIRED,
-            detail={
-                "code": "INSUFFICIENT_CREDITS",
-                "message": "Not enough credits for video generation. Please upgrade your plan.",
-            },
+    async with db.begin():
+        deducted = await credit_service.check_and_deduct(
+            user.id, 3, "generation", description="Video generation"
         )
+        if not deducted:
+            raise HTTPException(
+                status_code=status.HTTP_402_PAYMENT_REQUIRED,
+                detail={
+                    "code": "INSUFFICIENT_CREDITS",
+                    "message": "Not enough credits for video generation. Please upgrade your plan.",
+                },
+            )
 
-    job = GenerationJob(
-        user_id=user.id,
-        job_type="video",
-        status="queued",
-        input_params={"video_type": body.video_type, "source_job_id": body.job_id},
-        credits_used=3,
-    )
-    db.add(job)
-    await db.commit()
+        job = GenerationJob(
+            user_id=user.id,
+            job_type="video",
+            status="queued",
+            input_params={"video_type": body.video_type, "source_job_id": body.job_id},
+            credits_used=3,
+        )
+        db.add(job)
+
     await db.refresh(job)
 
     from app.worker.celery_app import celery_app
@@ -198,32 +201,33 @@ async def create_lookbook(
     credits_needed = len(body.garment_ids)
     credit_service = CreditService(db)
 
-    deducted = await credit_service.check_and_deduct(
-        user.id, credits_needed, "generation", description=f"Lookbook: {credits_needed} items"
-    )
-    if not deducted:
-        raise HTTPException(
-            status_code=status.HTTP_402_PAYMENT_REQUIRED,
-            detail={
-                "code": "INSUFFICIENT_CREDITS",
-                "message": "Not enough credits for lookbook generation.",
-            },
+    async with db.begin():
+        deducted = await credit_service.check_and_deduct(
+            user.id, credits_needed, "generation", description=f"Lookbook: {credits_needed} items"
         )
+        if not deducted:
+            raise HTTPException(
+                status_code=status.HTTP_402_PAYMENT_REQUIRED,
+                detail={
+                    "code": "INSUFFICIENT_CREDITS",
+                    "message": "Not enough credits for lookbook generation.",
+                },
+            )
 
-    job = GenerationJob(
-        user_id=user.id,
-        job_type="lookbook",
-        status="queued",
-        input_params={
-            "garment_ids": body.garment_ids,
-            "style": body.style,
-            "model_type": body.model_type,
-            "background": body.background,
-        },
-        credits_used=credits_needed,
-    )
-    db.add(job)
-    await db.commit()
+        job = GenerationJob(
+            user_id=user.id,
+            job_type="lookbook",
+            status="queued",
+            input_params={
+                "garment_ids": body.garment_ids,
+                "style": body.style,
+                "model_type": body.model_type,
+                "background": body.background,
+            },
+            credits_used=credits_needed,
+        )
+        db.add(job)
+
     await db.refresh(job)
 
     from app.worker.celery_app import celery_app

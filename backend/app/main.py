@@ -1,11 +1,15 @@
+import logging
 from contextlib import asynccontextmanager
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 import sentry_sdk
 
+logger = logging.getLogger(__name__)
+
 from app.config import get_settings
 from app.middleware.logging import LoggingMiddleware
+from app.services.redis import init_redis
 from app.middleware.auth_middleware import AuthMiddleware
 from app.middleware.rate_limit import RateLimitMiddleware
 from app.routers import auth, upload, generate, credits, dressing, brands, catalog, analytics, webhooks, stylist
@@ -28,8 +32,13 @@ async def lifespan(app: FastAPI):
 
     try:
         ensure_bucket_exists()
-    except Exception:
-        pass
+    except Exception as e:
+        logger.warning("Failed to ensure bucket exists: %s", str(e))
+
+    try:
+        await init_redis()
+    except Exception as e:
+        logger.warning("Redis init failed (rate limiting degraded): %s", str(e))
     yield
     # Shutdown
     from app.services.redis import close_redis

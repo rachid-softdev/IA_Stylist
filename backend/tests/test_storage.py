@@ -28,7 +28,12 @@ async def test_generate_presigned_upload_url():
         assert public_url.endswith(r2_key)
 
 
-def test_get_public_url():
-    url = get_public_url("uploads/raw/user-001/photo.jpg")
-    assert "cdn.vfs.ai" in url
-    assert "uploads/raw/user-001/photo.jpg" in url
+@pytest.mark.parametrize("r2_public_url,expected_pattern", [
+    ("", "uploads/raw/user-001/photo.jpg"),
+    ("https://cdn.vfs.ai", "cdn.vfs.ai"),
+])
+def test_get_public_url(r2_public_url: str, expected_pattern: str):
+    with patch("app.services.storage.settings.R2_PUBLIC_URL", r2_public_url):
+        url = get_public_url("uploads/raw/user-001/photo.jpg")
+        assert expected_pattern in url
+        assert "uploads/raw/user-001/photo.jpg" in url
