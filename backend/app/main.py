@@ -6,6 +6,7 @@ import sentry_sdk
 
 from app.config import get_settings
 from app.middleware.logging import LoggingMiddleware
+from app.middleware.auth_middleware import AuthMiddleware
 from app.middleware.rate_limit import RateLimitMiddleware
 from app.routers import auth, upload, generate, credits, dressing, brands, catalog, analytics, webhooks, stylist
 
@@ -31,7 +32,8 @@ async def lifespan(app: FastAPI):
         pass
     yield
     # Shutdown
-    pass
+    from app.services.redis import close_redis
+    await close_redis()
 
 
 app = FastAPI(
@@ -43,18 +45,22 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
-# Middleware (order matters)
+# Middleware — Starlette wraps inside-out, so LAST registered = outermost = runs FIRST
+# Desired execution: CORS → Auth → RateLimit → Logging → handler
+# So register in reverse: Logging (innermost) → RateLimit → Auth → CORS (outermost)
 app.add_middleware(LoggingMiddleware)
+
+app.add_middleware(RateLimitMiddleware)
+
+app.add_middleware(AuthMiddleware)
 
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.cors_origin_list,
     allow_credentials=True,
     allow_methods=["GET", "POST", "PUT", "DELETE", "PATCH"],
-    allow_headers=["*"],
+    allow_headers=["Content-Type", "Authorization", "X-Request-ID", "X-CSRF-Token", "X-Requested-With"],
 )
-
-app.add_middleware(RateLimitMiddleware)
 
 # Routers
 app.include_router(auth.router, prefix="/v1/auth", tags=["Auth"])

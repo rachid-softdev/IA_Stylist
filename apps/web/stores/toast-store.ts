@@ -22,7 +22,7 @@ export const useToastStore = create<ToastState>((set) => ({
     const id = `toast_${++toastId}`
     set((state) => ({
       toasts: [
-        ...state.toasts.slice(-2), // Keep max 3
+        ...state.toasts.slice(-3), // Keep max 3
         { ...toast, id },
       ],
     }))

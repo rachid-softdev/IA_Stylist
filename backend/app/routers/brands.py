@@ -1,8 +1,12 @@
+from datetime import datetime, timedelta
+from typing import Optional
+
 from fastapi import APIRouter, Depends, HTTPException, status
+from pydantic import BaseModel, Field
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 
-from app.dependencies import get_current_user
+from app.dependencies import get_current_user, get_current_brand_admin
 from app.db.session import get_db
 from app.models.user import User
 from app.models.brand import Brand, BrandMember
@@ -15,6 +19,11 @@ from app.schemas.common import (
     ApiKeyResponse,
     ApiKeyCreateResponse,
 )
+
+
+class ApiKeyCreateRequest(BaseModel):
+    name: Optional[str] = Field(default=None, max_length=100)
+    expires_in_days: Optional[int] = Field(default=None, ge=1, le=365)
 
 router = APIRouter()
 
@@ -47,7 +56,6 @@ async def create_brand(
 
 @router.get("/me", response_model=BrandResponse)
 async def get_my_brand(
-    brand_id: str,
     user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
@@ -73,16 +81,24 @@ async def get_my_brand(
 @router.put("/me", response_model=BrandResponse)
 async def update_brand(
     body: BrandCreateRequest,
-    brand_id: str,
     user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
-    """Update brand details."""
-    result = await db.execute(select(Brand).where(Brand.id == brand_id))
+    """Update brand details. Finds the brand by the user's membership."""
+    # Find brand where user is member
+    result = await db.execute(
+        select(Brand)
+        .join(BrandMember, Brand.id == BrandMember.brand_id)
+        .where(BrandMember.user_id == user.id)
+        .limit(1)
+    )
     brand = result.scalar_one_or_none()
 
     if not brand:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail={"code": "NO_BRAND", "message": "No brand associated with this account"},
+        )
 
     if body.name:
         brand.name = body.name
@@ -161,24 +177,37 @@ async def remove_member(
 
 @router.post("/api-keys", response_model=ApiKeyCreateResponse)
 async def create_api_key(
+    body: ApiKeyCreateRequest,
     brand_id: str,
     user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
     """Generate a new API key for the brand."""
-    raw_key, hashed_key = generate_api_key()
+    from app.models.api_key import ApiKey
+    from app.services.security import generate_api_key, extract_key_prefix, extract_key_last4
 
     result = await db.execute(select(Brand).where(Brand.id == brand_id))
     brand = result.scalar_one_or_none()
-
     if not brand:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
 
-    brand.api_key_hash = hashed_key
-    api_key_id = hashed_key[:16]
-    await db.commit()
+    raw_key, hashed_key = generate_api_key()
+    prefix = extract_key_prefix(raw_key)
+    last4 = extract_key_last4(raw_key)
 
-    return ApiKeyCreateResponse(api_key=raw_key, id=api_key_id)
+    api_key = ApiKey(
+        brand_id=brand_id,
+        key_hash=hashed_key,
+        prefix=prefix,
+        last_four=last4,
+        name=body.name or "Default",
+        expires_at=datetime.utcnow() + timedelta(days=body.expires_in_days) if body.expires_in_days else None,
+    )
+    db.add(api_key)
+    await db.commit()
+    await db.refresh(api_key)
+
+    return ApiKeyCreateResponse(api_key=raw_key, id=api_key.id)
 
 
 @router.get("/api-keys")
@@ -188,24 +217,27 @@ async def list_api_keys(
     db: AsyncSession = Depends(get_db),
 ):
     """List API keys (masked)."""
-    result = await db.execute(select(Brand).where(Brand.id == brand_id))
-    brand = result.scalar_one_or_none()
+    from app.models.api_key import ApiKey
 
-    if not brand:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
+    result = await db.execute(
+        select(ApiKey).where(
+            ApiKey.brand_id == brand_id,
+            ApiKey.is_active == True,
+        ).order_by(ApiKey.created_at.desc())
+    )
+    keys = result.scalars().all()
 
-    keys = []
-    if brand.api_key_hash:
-        keys.append(
+    return {
+        "data": [
             ApiKeyResponse(
-                id=brand.api_key_hash[:16],
-                prefix="vfs_live_",
-                last_four="****",
-                created_at=brand.created_at,
+                id=key.id,
+                prefix=key.prefix,
+                last_four=key.last_four,
+                created_at=key.created_at,
             )
-        )
-
-    return {"data": keys}
+            for key in keys
+        ]
+    }
 
 
 @router.delete("/api-keys/{key_id}")
@@ -215,14 +247,22 @@ async def delete_api_key(
     user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
-    """Delete an API key."""
-    result = await db.execute(select(Brand).where(Brand.id == brand_id))
-    brand = result.scalar_one_or_none()
+    """Delete (deactivate) an API key."""
+    from app.models.api_key import ApiKey
 
-    if not brand:
+    result = await db.execute(
+        select(ApiKey).where(
+            ApiKey.id == key_id,
+            ApiKey.brand_id == brand_id,
+        )
+    )
+    api_key = result.scalar_one_or_none()
+
+    if not api_key:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
 
-    brand.api_key_hash = None
+    # Soft delete: deactivate instead of hard delete
+    api_key.is_active = False
     await db.commit()
 
-    return {"message": "API key deleted"}
+    return {"message": "API key deactivated"}

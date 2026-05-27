@@ -15,7 +15,7 @@ class Garment(BaseModel):
     name: Mapped[str] = mapped_column(String(255), nullable=False)
     category: Mapped[str] = mapped_column(String(50), nullable=False)
     image_url: Mapped[str] = mapped_column(String(500), nullable=False)
-    metadata: Mapped[Optional[dict]] = mapped_column(JSONB, nullable=True)
+    garment_metadata: Mapped[Optional[dict]] = mapped_column("metadata", JSONB, nullable=True)
     status: Mapped[str] = mapped_column(String(20), default="active")
 
     brand: Mapped["Brand"] = relationship("Brand", back_populates="garments")

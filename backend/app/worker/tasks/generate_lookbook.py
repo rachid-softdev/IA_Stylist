@@ -1,11 +1,10 @@
-from celery import Task
 from app.worker.celery_app import celery_app
+from app.worker.tasks.utils import run_async
 
 
 @celery_app.task(bind=True, max_retries=1)
 def generate_lookbook(self, job_id: str):
     """Generate a batch lookbook for a collection of garments."""
-    import asyncio
 
     async def _run():
         from app.worker.tasks.generate_image import _update_job_status, AsyncSessionLocal, GenerationJob, select
@@ -36,4 +35,4 @@ def generate_lookbook(self, job_id: str):
                 status="done",
             )
 
-    asyncio.run(_run())
+    run_async(_run())

@@ -6,7 +6,7 @@ Plateforme de visualisation mode par IA. Try-on virtuel, génération vidéo, AI
 
 | Couche | Technologie |
 |---|---|
-| Frontend Web | Next.js 14 (App Router), TypeScript, Tailwind v4, shadcn/ui |
+| Frontend Web | Next.js 15 (App Router), TypeScript, Tailwind CSS 3, shadcn/ui |
 | Frontend Mobile | Expo (React Native) |
 | Backend | Python 3.12, FastAPI, Celery |
 | DB | PostgreSQL (Neon), Redis (Upstash) |
@@ -18,7 +18,7 @@ Plateforme de visualisation mode par IA. Try-on virtuel, génération vidéo, AI
 
 ```
 virtual-fashion-studio/
-├── apps/web/          # Next.js 14 frontend
+├── apps/web/          # Next.js 15 frontend
 ├── apps/mobile/       # Expo React Native
 ├── packages/          # Types & utilitaires partagés
 ├── backend/           # API FastAPI + Workers Celery

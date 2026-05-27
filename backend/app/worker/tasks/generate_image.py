@@ -1,5 +1,4 @@
 import time
-from celery import Task
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncSession
 from sqlalchemy import select
 
@@ -7,6 +6,7 @@ from app.config import get_settings
 from app.models.job import GenerationJob
 from app.services.websocket import push_job_update
 from app.worker.celery_app import celery_app
+from app.worker.tasks.utils import run_async
 
 settings = get_settings()
 
@@ -38,7 +38,6 @@ async def _update_job_status(job_id: str, status: str, error_message: str | None
 @celery_app.task(bind=True, max_retries=2, default_retry_delay=30)
 def generate_tryon_image(self, job_id: str):
     """Generate a try-on image using AI services."""
-    import asyncio
 
     async def _run():
         await _update_job_status(job_id, "processing")
@@ -97,4 +96,4 @@ def generate_tryon_image(self, job_id: str):
                         job.user_id, job.credits_used, "refund", job.id, f"Job failed: {str(exc)}"
                     )
 
-    asyncio.run(_run())
+    run_async(_run())

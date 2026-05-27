@@ -1,4 +1,5 @@
 from pydantic_settings import BaseSettings
+from pydantic import model_validator
 from typing import Optional
 from functools import lru_cache
 
@@ -8,8 +9,8 @@ class Settings(BaseSettings):
     ENVIRONMENT: str = "local"
 
     # Database
-    DATABASE_URL: str = "postgresql+asyncpg://vfs:vfs@localhost:5432/vfs"
-    DATABASE_URL_SYNC: str = "postgresql://vfs:vfs@localhost:5432/vfs"
+    DATABASE_URL: str = ""  # Must be set via .env
+    DATABASE_URL_SYNC: str = ""  # Must be set via .env
 
     # Redis
     REDIS_URL: str = "redis://localhost:6379/0"
@@ -20,7 +21,7 @@ class Settings(BaseSettings):
     SUPABASE_SERVICE_ROLE_KEY: str = ""
 
     # JWT
-    JWT_SECRET: str = "change-me-in-production"
+    JWT_SECRET: str = ""  # Must be set via .env
     JWT_ALGORITHM: str = "HS256"
     JWT_ACCESS_TOKEN_EXPIRE_MINUTES: int = 60
     JWT_REFRESH_TOKEN_EXPIRE_DAYS: int = 30
@@ -63,6 +64,25 @@ class Settings(BaseSettings):
     CELERY_BROKER_URL: Optional[str] = None
     CELERY_RESULT_BACKEND: Optional[str] = None
 
+    @model_validator(mode="after")
+    def validate_production_settings(self):
+        if self.ENVIRONMENT == "production":
+            missing = []
+            if not self.DATABASE_URL:
+                missing.append("DATABASE_URL")
+            if not self.JWT_SECRET:
+                missing.append("JWT_SECRET")
+            if not self.SUPABASE_URL:
+                missing.append("SUPABASE_URL")
+            if not self.SUPABASE_ANON_KEY:
+                missing.append("SUPABASE_ANON_KEY")
+            if missing:
+                raise ValueError(
+                    f"Missing required settings in production: {', '.join(missing)}. "
+                    "Set them via environment variables or .env file."
+                )
+        return self
+
     model_config = {
         "env_file": ".env",
         "env_file_encoding": "utf-8",
@@ -84,6 +104,13 @@ class Settings(BaseSettings):
             "pro": self.RATE_LIMIT_PRO,
             "brand": self.RATE_LIMIT_BRAND,
         }
+
+    @property
+    def r2_endpoint_url(self) -> str:
+        ep = self.R2_ENDPOINT.strip()
+        if ep.startswith("https://") or ep.startswith("http://"):
+            return ep
+        return f"https://{ep}"
 
 
 @lru_cache()

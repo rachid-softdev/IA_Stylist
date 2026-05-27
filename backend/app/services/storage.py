@@ -13,7 +13,7 @@ def _get_client():
     if _s3_client is None:
         _s3_client = boto3.client(
             "s3",
-            endpoint_url=f"https://{settings.R2_ENDPOINT}",
+            endpoint_url=settings.r2_endpoint_url,
             aws_access_key_id=settings.R2_ACCESS_KEY,
             aws_secret_access_key=settings.R2_SECRET_KEY,
             config=Config(signature_version="s3v4", region_name="auto"),

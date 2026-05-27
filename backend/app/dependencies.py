@@ -129,11 +129,22 @@ async def require_plan(plan: str):
 
 
 async def get_current_brand_admin(
-    brand_id: str,
+    request: Request,
     user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ) -> User:
+    """Get current user and verify they are an admin of the brand.
+    
+    The brand_id is extracted from the request path parameters.
+    """
     from app.models.brand import BrandMember
+
+    brand_id = request.path_params.get("brand_id")
+    if not brand_id:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail={"code": "MISSING_BRAND_ID", "message": "Brand ID is required"},
+        )
 
     result = await db.execute(
         select(BrandMember).where(

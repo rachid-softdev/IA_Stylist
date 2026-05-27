@@ -1,12 +1,22 @@
 'use client'
 
-import { useMemo } from 'react'
+import { useState, useEffect } from 'react'
 
 export function useMediaQuery(query: string): boolean {
-  if (typeof window === 'undefined') return false
+  const [matches, setMatches] = useState(false)
 
-  // eslint-disable-next-line react-hooks/rules-of-hooks
-  return useMemo(() => window.matchMedia(query).matches, [query])
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+
+    const mq = window.matchMedia(query)
+    setMatches(mq.matches)
+
+    const handler = (e: MediaQueryListEvent) => setMatches(e.matches)
+    mq.addEventListener('change', handler)
+    return () => mq.removeEventListener('change', handler)
+  }, [query])
+
+  return matches
 }
 
 export function useBreakpoint() {

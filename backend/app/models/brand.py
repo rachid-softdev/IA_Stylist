@@ -1,8 +1,11 @@
 import uuid
-from typing import Optional
+from typing import TYPE_CHECKING, Optional
 from sqlalchemy import String, Integer, ForeignKey, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.models.base import BaseModel
+
+if TYPE_CHECKING:
+    from app.models.api_key import ApiKey
 
 
 class Brand(BaseModel):
@@ -21,6 +24,9 @@ class Brand(BaseModel):
     garments: Mapped[list["Garment"]] = relationship("Garment", back_populates="brand")
     jobs: Mapped[list["GenerationJob"]] = relationship(
         "GenerationJob", back_populates="brand", foreign_keys="GenerationJob.brand_id"
+    )
+    api_keys: Mapped[list["ApiKey"]] = relationship(
+        "ApiKey", back_populates="brand", cascade="all, delete-orphan"
     )
 
 
