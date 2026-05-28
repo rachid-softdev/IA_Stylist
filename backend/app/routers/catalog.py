@@ -3,23 +3,21 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, desc
 from typing import Optional
 
-from app.dependencies import get_current_user
+from app.dependencies import verify_brand_membership, verify_brand_admin_access
 from app.db.session import get_db
-from app.models.user import User
 from app.models.garment import Garment
 from app.schemas.common import GarmentResponse, GarmentCreateRequest, GarmentUpdateRequest
 
 router = APIRouter()
 
 
-@router.get("/garments")
+@router.get("/{brand_id}/garments")
 async def list_garments(
-    brand_id: str,
+    brand_id: str = Depends(verify_brand_membership),
     page: int = Query(default=1, ge=1),
     page_size: int = Query(default=20, ge=1, le=100),
     category: Optional[str] = None,
     status_filter: Optional[str] = Query(default="active", alias="status"),
-    user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
     """List garments in a brand's catalog."""
@@ -41,11 +39,10 @@ async def list_garments(
     }
 
 
-@router.post("/garments", response_model=GarmentResponse)
+@router.post("/{brand_id}/garments", response_model=GarmentResponse)
 async def create_garment(
-    brand_id: str,
     body: GarmentCreateRequest,
-    user: User = Depends(get_current_user),
+    brand_id: str = Depends(verify_brand_admin_access),
     db: AsyncSession = Depends(get_db),
 ):
     """Add a garment to the catalog."""
@@ -65,11 +62,10 @@ async def create_garment(
     return garment
 
 
-@router.get("/garments/{garment_id}", response_model=GarmentResponse)
+@router.get("/{brand_id}/garments/{garment_id}", response_model=GarmentResponse)
 async def get_garment(
-    brand_id: str,
     garment_id: str,
-    user: User = Depends(get_current_user),
+    brand_id: str = Depends(verify_brand_membership),
     db: AsyncSession = Depends(get_db),
 ):
     """Get a single garment."""
@@ -84,12 +80,11 @@ async def get_garment(
     return garment
 
 
-@router.put("/garments/{garment_id}", response_model=GarmentResponse)
+@router.put("/{brand_id}/garments/{garment_id}", response_model=GarmentResponse)
 async def update_garment(
-    brand_id: str,
     garment_id: str,
     body: GarmentUpdateRequest,
-    user: User = Depends(get_current_user),
+    brand_id: str = Depends(verify_brand_admin_access),
     db: AsyncSession = Depends(get_db),
 ):
     """Update a garment."""
@@ -110,11 +105,10 @@ async def update_garment(
     return garment
 
 
-@router.delete("/garments/{garment_id}")
+@router.delete("/{brand_id}/garments/{garment_id}")
 async def delete_garment(
-    brand_id: str,
     garment_id: str,
-    user: User = Depends(get_current_user),
+    brand_id: str = Depends(verify_brand_admin_access),
     db: AsyncSession = Depends(get_db),
 ):
     """Delete a garment."""

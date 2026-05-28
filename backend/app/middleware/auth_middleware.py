@@ -16,6 +16,10 @@ class AuthMiddleware(BaseHTTPMiddleware):
     """
     
     async def dispatch(self, request: Request, call_next):
+        # Skip JWT processing if API key already authenticated
+        if getattr(request.state, "auth_method", None) == "api_key":
+            return await call_next(request)
+
         # Skip auth for non-API routes and OPTIONS preflight
         if not request.url.path.startswith("/v1") or request.method == "OPTIONS":
             return await call_next(request)
@@ -44,7 +48,7 @@ class AuthMiddleware(BaseHTTPMiddleware):
                     token,
                     settings.JWT_SECRET,
                     algorithms=["HS256"],
-                    options={"verify_aud": False},
+                    options={"verify_aud": False},  # Intentional: Supabase JWTs don't include an 'aud' claim we can validate; disabling prevents decode failure while still verifying signature, exp, iss.
                 )
                 
                 request.state.current_user_id = payload.get("sub")

@@ -165,3 +165,120 @@ async def get_current_brand_admin(
             },
         )
     return user
+
+
+async def verify_brand_membership(
+    request: Request,
+    user: Optional[User] = Depends(get_optional_user),
+    db: AsyncSession = Depends(get_db),
+) -> str:
+    """Dual-mode (API key + JWT) brand membership verification.
+
+    Returns the brand_id if the request is authenticated as a member of the brand.
+    For API key auth: verifies the key's brand_id matches the path brand_id.
+    For JWT auth: queries BrandMember table for any role.
+    """
+    brand_id = request.path_params.get("brand_id")
+    if not brand_id:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail={"code": "MISSING_BRAND_ID", "message": "Brand ID is required"},
+        )
+
+    # API key path — trust the brand_id set by ApiKeyMiddleware
+    if getattr(request.state, "auth_method", None) == "api_key":
+        stored_brand_id = getattr(request.state, "brand_id", None)
+        if stored_brand_id != brand_id:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail={
+                    "code": "FORBIDDEN",
+                    "message": "API key not authorized for this brand",
+                },
+            )
+        return brand_id
+
+    # JWT path — verify BrandMember record exists
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail={"code": "MISSING_TOKEN", "message": "Authentication required"},
+        )
+
+    result = await db.execute(
+        select(BrandMember).where(
+            BrandMember.brand_id == brand_id,
+            BrandMember.user_id == user.id,
+        )
+    )
+    member = result.scalar_one_or_none()
+
+    if not member:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail={
+                "code": "FORBIDDEN",
+                "message": "Brand membership required",
+            },
+        )
+
+    return brand_id
+
+
+async def verify_brand_admin_access(
+    request: Request,
+    user: Optional[User] = Depends(get_optional_user),
+    db: AsyncSession = Depends(get_db),
+) -> str:
+    """Dual-mode (API key + JWT) brand admin verification.
+
+    Returns the brand_id if the request is authenticated as an admin of the brand.
+    For API key auth: verifies the key's brand_id matches the path brand_id.
+    For JWT auth: queries BrandMember table for admin role.
+    """
+    brand_id = request.path_params.get("brand_id")
+    if not brand_id:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail={"code": "MISSING_BRAND_ID", "message": "Brand ID is required"},
+        )
+
+    # API key path — trust the brand_id set by ApiKeyMiddleware
+    if getattr(request.state, "auth_method", None) == "api_key":
+        stored_brand_id = getattr(request.state, "brand_id", None)
+        if stored_brand_id != brand_id:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail={
+                    "code": "FORBIDDEN",
+                    "message": "API key not authorized for this brand",
+                },
+            )
+        return brand_id
+
+    # JWT path — verify BrandMember record with admin role
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail={"code": "MISSING_TOKEN", "message": "Authentication required"},
+        )
+
+    result = await db.execute(
+        select(BrandMember).where(
+            BrandMember.brand_id == brand_id,
+            BrandMember.user_id == user.id,
+            BrandMember.role == "admin",
+        )
+    )
+    member = result.scalar_one_or_none()
+
+    if not member:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail={
+                "code": "FORBIDDEN",
+                "message": "Brand admin access required",
+            },
+        )
+
+    return brand_id

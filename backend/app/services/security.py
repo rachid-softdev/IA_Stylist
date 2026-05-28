@@ -1,7 +1,5 @@
-import hashlib
-import hmac
+import bcrypt
 import uuid
-from datetime import datetime, timedelta
 
 from app.config import get_settings
 from app.models.brand import Brand
@@ -21,12 +19,12 @@ def hash_api_key(raw_key: str) -> str:
 
 
 def verify_api_key(raw_key: str, hashed_key: str) -> bool:
-    """Verify an API key against its stored hash."""
-    return hmac.compare_digest(_hash_key(raw_key), hashed_key)
+    """Verify an API key against its stored bcrypt hash."""
+    return bcrypt.checkpw(raw_key.encode("utf-8"), hashed_key.encode("utf-8"))
 
 
 def _hash_key(key: str) -> str:
-    return hashlib.sha256(key.encode("utf-8")).hexdigest()
+    return bcrypt.hashpw(key.encode("utf-8"), bcrypt.gensalt()).decode("utf-8")
 
 
 def extract_key_prefix(raw_key: str) -> str:

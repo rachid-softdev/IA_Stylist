@@ -114,7 +114,7 @@ async def update_brand(
 @router.get("/{brand_id}/members")
 async def list_members(
     brand_id: str,
-    user: User = Depends(get_current_user),
+    user: User = Depends(get_current_brand_admin),
     db: AsyncSession = Depends(get_db),
 ):
     """List brand members."""
@@ -129,7 +129,7 @@ async def list_members(
 async def add_member(
     body: BrandMemberCreateRequest,
     brand_id: str,
-    user: User = Depends(get_current_user),
+    user: User = Depends(get_current_brand_admin),
     db: AsyncSession = Depends(get_db),
 ):
     """Invite a member to the brand."""
@@ -154,7 +154,7 @@ async def add_member(
 async def remove_member(
     brand_id: str,
     target_user_id: str,
-    user: User = Depends(get_current_user),
+    user: User = Depends(get_current_brand_admin),
     db: AsyncSession = Depends(get_db),
 ):
     """Remove a member from the brand."""
