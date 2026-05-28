@@ -11,11 +11,14 @@ settings = get_settings()
 
 class RateLimitMiddleware(BaseHTTPMiddleware):
     """Rate limits requests using a fixed window counter in Redis.
-    
-    Uses INCR + EXPIRE pattern. This is a fixed window algorithm,
-    which is acceptable for this application. The window resets
-    every hour, so there may be bursts at window boundaries.
-    
+
+    Uses INCR + EXPIRE pattern (fixed window algorithm).
+    This is a deliberate trade-off: simpler than sliding window, but
+    allows up to 2x the limit at window boundaries (burst at HH:59 + HH:00).
+
+    If stricter rate limiting is needed, migrate to a sliding window
+    using Redis sorted sets (ZADD + ZREMRANGEBYSCORE + ZCARD).
+
     Requires AuthMiddleware to run first so request.state.current_user_plan is set.
     Falls back to 'free' plan if no auth info is available.
     """

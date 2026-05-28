@@ -6,6 +6,11 @@ from app.config import get_settings
 
 logger = logging.getLogger(__name__)
 
+# NOTE: Redis connection pool is a PER-PROCESS singleton.
+# If uvicorn runs with --workers N (>1), each worker process
+# creates its own independent pool. This is expected and correct
+# because worker processes are isolated (no shared memory).
+# Max Redis connections = workers * max_connections (default 10).
 _pool: Optional[aioredis.ConnectionPool] = None
 
 

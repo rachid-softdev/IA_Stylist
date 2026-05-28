@@ -1,5 +1,19 @@
 import type { ApiResponse, ApiError } from '@vfs/shared-types'
 
+export class ApiClientError extends Error {
+  public readonly code: string
+  public readonly status: number
+  public readonly details?: Record<string, unknown>
+
+  constructor(code: string, message: string, status: number, details?: Record<string, unknown>) {
+    super(message)
+    this.name = 'ApiClientError'
+    this.code = code
+    this.status = status
+    this.details = details
+  }
+}
+
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
 
 class ApiClient {
@@ -22,6 +36,20 @@ class ApiClient {
       ...((options?.headers as Record<string, string>) || {}),
     }
 
+    // 🔥 CSRF : Lire le cookie et extraire le token brut (avant le '.')
+    if (method !== 'GET') {
+      const csrfCookie = document.cookie
+        .split('; ')
+        .find(row => row.startsWith('csrf_token='))
+        ?.split('=')[1]
+      if (csrfCookie) {
+        const rawToken = csrfCookie.split('.')[0]  // Extraction obligatoire — le cookie contient raw.signed
+        if (rawToken) {
+          headers['X-CSRF-Token'] = rawToken
+        }
+      }
+    }
+
     const config: RequestInit = {
       method,
       headers,
@@ -37,12 +65,12 @@ class ApiClient {
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}))
-      throw {
-        code: errorData?.error?.code || 'UNKNOWN',
-        message: errorData?.error?.message || 'Request failed',
-        status: response.status,
-        details: errorData?.error?.details,
-      }
+      throw new ApiClientError(
+        errorData?.error?.code || 'UNKNOWN',
+        errorData?.error?.message || 'Request failed',
+        response.status,
+        errorData?.error?.details,
+      )
     }
 
     return response.json()

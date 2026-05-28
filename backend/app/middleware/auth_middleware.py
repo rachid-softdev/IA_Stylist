@@ -51,8 +51,16 @@ class AuthMiddleware(BaseHTTPMiddleware):
                 request.state.current_user_plan = payload.get("plan", "free")
                 
             except Exception as e:
-                # Token invalid or expired — don't block, rate limiter will use "free"
-                # The route dependency will properly validate later
+                # INTENTIONNEL : On ne rejette PAS la requête ici.
+                # Ce middleware sert uniquement à préparer request.state
+                # pour le RateLimitMiddleware (qui a besoin du plan).
+                #
+                # La validation stricte de l'authentification est déléguée
+                # aux dépendances FastAPI (get_current_user, require_auth)
+                # dans les route handlers. Voir backend/app/dependencies.py.
+                #
+                # Si un token invalide arrive sur une route protégée,
+                # la dépendance lèvera un HTTPException avec 401.
                 logger.warning("AuthMiddleware: JWT decode failed: %s", str(e))
                 request.state.current_user_id = None
                 request.state.current_user_plan = "free"

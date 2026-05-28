@@ -98,7 +98,7 @@ Déduction crédit utilisateur
 |---|---|---|
 | Next.js 14 (App Router) | Framework principal | SSR/SSG, RSC, routing, API routes intégrées |
 | TypeScript | Typage | Maintenabilité, DX, erreurs au build |
-| Tailwind CSS v4 | Styling | Utility-first, performance, pas de runtime CSS |
+| Tailwind CSS v3 | Styling | Utility-first, performance, pas de runtime CSS |
 | Framer Motion | Animations | Qualité animation, API déclarative |
 | Zustand | State management | Léger, simple, pas de boilerplate Redux |
 | React Query (TanStack) | Data fetching | Cache, retry, loading states automatiques |
