@@ -42,7 +42,17 @@ async def get_csrf_token(request: Request):
 
 @router.post("/refresh")
 async def refresh_token():
-    """Token refresh handled by Supabase client on frontend."""
+    """Token refresh handled by Supabase client on frontend.
+
+    This endpoint is intentionally a no-op because:
+    - Supabase SDK manages refresh tokens client-side automatically
+    - Backend validates tokens on each request via AuthMiddleware
+    - Supabase refresh tokens are single-use (rotation built-in)
+
+    TODO: If server-side session revocation becomes necessary,
+    implement a Redis-backed session store and validate tokens
+    against it in AuthMiddleware.
+    """
     return {"message": "Token refresh handled client-side via Supabase"}
 
 

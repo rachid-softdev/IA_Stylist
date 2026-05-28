@@ -20,6 +20,10 @@ async def push_job_update(
     """
     Push a job status update via Supabase Realtime.
     Falls back to no-op if Realtime is not configured.
+
+    NOTE: Publishing requires either SERVICE_ROLE_KEY or a custom API key with
+    Realtime broadcast permission. For production, create a restricted key in
+    the Supabase dashboard and set SUPABASE_REALTIME_KEY.
     """
     payload = {
         "type": "job_update",
@@ -33,12 +37,16 @@ async def push_job_update(
 
     try:
         # Publish via Supabase Realtime REST API
+        # NOTE: Publishing requires either SERVICE_ROLE_KEY or a custom API key with
+        # Realtime broadcast permission. For production, create a restricted key in
+        # the Supabase dashboard and set SUPABASE_REALTIME_KEY.
+        realtime_key = settings.SUPABASE_REALTIME_KEY or settings.SUPABASE_SERVICE_ROLE_KEY
         async with httpx.AsyncClient() as client:
             await client.post(
                 f"{settings.SUPABASE_URL}/rest/v1/rpc/publish",
                 headers={
-                    "apikey": settings.SUPABASE_SERVICE_ROLE_KEY,
-                    "Authorization": f"Bearer {settings.SUPABASE_SERVICE_ROLE_KEY}",
+                    "apikey": realtime_key,
+                    "Authorization": f"Bearer {realtime_key}",
                     "Content-Type": "application/json",
                 },
                 json={

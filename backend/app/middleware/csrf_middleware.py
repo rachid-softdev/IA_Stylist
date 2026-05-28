@@ -7,7 +7,7 @@ matches the cookie value. Uses timing-safe comparison.
 Exempt routes:
 - GET, HEAD, OPTIONS, TRACE (safe methods)
 - /v1/auth/* (login/signup/refresh are idempotent or use Authorization header)
-- /v1/webhooks/* (called by external services, not browsers)
+- /v1/webhooks/stripe (called by Stripe, not browsers)
 - /health
 """
 import logging
@@ -24,10 +24,10 @@ CSRF_COOKIE_NAME = "csrf_token"
 # Routes exempt from CSRF validation
 EXEMPT_PATHS = {
     "/health",
+    "/v1/webhooks/stripe",
 }
 EXEMPT_PREFIXES = {
     "/v1/auth/",
-    "/v1/webhooks/",
 }
 SAFE_METHODS = {"GET", "HEAD", "OPTIONS", "TRACE"}
 

@@ -30,6 +30,10 @@ if settings.SENTRY_DSN:
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Startup
+    # Configure SQLAlchemy logging (replaces deprecated echo= flag)
+    if settings.ENVIRONMENT == "local":
+        logging.getLogger("sqlalchemy.engine").setLevel(logging.WARNING)
+
     from app.services.storage import ensure_bucket_exists
 
     try:
@@ -55,6 +59,17 @@ app = FastAPI(
     redoc_url=None,
     lifespan=lifespan,
 )
+
+# Security headers — ASGI-native middleware (low overhead, no BaseHTTPMiddleware)
+@app.middleware("http")
+async def add_security_headers(request: Request, call_next):
+    """Add security headers to all responses."""
+    response = await call_next(request)
+    response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
+    response.headers["X-Content-Type-Options"] = "nosniff"
+    response.headers["X-Frame-Options"] = "DENY"
+    response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
+    return response
 
 # Middleware — Starlette wraps inside-out, so LAST registered = outermost = runs FIRST
 # Desired execution: CORS → CSRF → Auth → RateLimit → Logging → handler
