@@ -19,12 +19,16 @@ class ApiKeyFailureRateLimiter:
         self._store: dict[str, list[float]] = defaultdict(list)
 
     def _prune(self, ip: str) -> None:
-        """Remove expired entries."""
+        """Remove expired entries and clean up empty keys."""
+        if ip not in self._store:
+            return
         now = time.time()
         self._store[ip] = [
             t for t in self._store[ip]
             if now - t < self.window_seconds
         ]
+        if not self._store[ip]:
+            del self._store[ip]
 
     def is_rate_limited(self, ip: str) -> bool:
         self._prune(ip)
