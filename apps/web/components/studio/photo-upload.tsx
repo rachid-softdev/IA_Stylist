@@ -3,7 +3,7 @@
 import { useUpload } from '@/hooks/use-upload'
 import { UploadZone } from '@/components/ui/upload-zone'
 import { useToastStore } from '@/stores/toast-store'
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 
 interface PhotoUploadProps {
   preview: string | null
@@ -14,6 +14,16 @@ interface PhotoUploadProps {
 export function PhotoUploadZone({ preview, onUpload, error }: PhotoUploadProps) {
   const { addToast } = useToastStore()
   const [localPreview, setLocalPreview] = useState<string | null>(preview || null)
+  const objectUrlRef = useRef<string | null>(null)
+
+  // Nettoyage au démontage du composant
+  useEffect(() => {
+    return () => {
+      if (objectUrlRef.current) {
+        URL.revokeObjectURL(objectUrlRef.current)
+      }
+    }
+  }, [])
 
   const { upload, isUploading, progress } = useUpload({
     folder: 'uploads/raw',
@@ -51,8 +61,13 @@ export function PhotoUploadZone({ preview, onUpload, error }: PhotoUploadProps) 
         return
       }
 
-      // Local preview
+      // 🔥 Révoguer l'ancienne object URL si elle existe
+      if (objectUrlRef.current) {
+        URL.revokeObjectURL(objectUrlRef.current)
+      }
+
       const objectUrl = URL.createObjectURL(file)
+      objectUrlRef.current = objectUrl
       setLocalPreview(objectUrl)
 
       await upload(file)
