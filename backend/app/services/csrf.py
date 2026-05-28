@@ -14,13 +14,10 @@ def generate_csrf_token() -> str:
 def sign_csrf_token(token: str) -> str:
     """Sign a CSRF token with the server secret to prevent tampering."""
     settings = get_settings()
-    # Priorité à CSRF_SECRET, fallback JWT_SECRET
-    secret = settings.CSRF_SECRET or settings.JWT_SECRET
-    if not secret:
-        raise RuntimeError(
-            "CSRF_SECRET or JWT_SECRET must be configured "
-            "for CSRF protection to work"
-        )
+    # CSRF_SECRET must be set independently of JWT_SECRET
+    if not settings.CSRF_SECRET:
+        raise RuntimeError("CSRF_SECRET must be configured independently of JWT_SECRET")
+    secret = settings.CSRF_SECRET
     key = secret.encode("utf-8")
     return hmac.new(key, token.encode("utf-8"), hashlib.sha256).hexdigest()
 

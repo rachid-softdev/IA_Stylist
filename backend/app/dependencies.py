@@ -215,6 +215,15 @@ async def verify_brand_membership(
     # API key path — trust the brand_id set by ApiKeyMiddleware
     if getattr(request.state, "auth_method", None) == "api_key":
         stored_brand_id = getattr(request.state, "brand_id", None)
+        # 🔒 Defense-in-depth: verify brand_id was set by ApiKeyMiddleware
+        if stored_brand_id is None:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail={
+                    "code": "INTERNAL_ERROR",
+                    "message": "Authentication state corrupted",
+                },
+            )
         if stored_brand_id != brand_id:
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
@@ -273,6 +282,15 @@ async def verify_brand_admin_access(
     # API key path — trust the brand_id set by ApiKeyMiddleware
     if getattr(request.state, "auth_method", None) == "api_key":
         stored_brand_id = getattr(request.state, "brand_id", None)
+        # 🔒 Defense-in-depth: verify brand_id was set by ApiKeyMiddleware
+        if stored_brand_id is None:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail={
+                    "code": "INTERNAL_ERROR",
+                    "message": "Authentication state corrupted",
+                },
+            )
         if stored_brand_id != brand_id:
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,

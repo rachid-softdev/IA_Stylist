@@ -19,6 +19,7 @@ class Settings(BaseSettings):
     SUPABASE_URL: str = ""
     SUPABASE_ANON_KEY: str = ""
     SUPABASE_SERVICE_ROLE_KEY: str = ""
+    SUPABASE_REALTIME_KEY: str = ""  # Optional; falls back to SERVICE_ROLE_KEY
 
     # JWT
     JWT_SECRET: str = ""  # Must be set via .env
@@ -27,7 +28,7 @@ class Settings(BaseSettings):
     JWT_REFRESH_TOKEN_EXPIRE_DAYS: int = 30
 
     # CSRF
-    CSRF_SECRET: str = ""  # Optional; falls back to JWT_SECRET
+    CSRF_SECRET: str = ""  # Must be set independently from JWT_SECRET
 
     # Cloudflare R2
     R2_ACCESS_KEY: str = ""
@@ -68,22 +69,29 @@ class Settings(BaseSettings):
     CELERY_RESULT_BACKEND: Optional[str] = None
 
     @model_validator(mode="after")
-    def validate_production_settings(self):
+    def validate_critical_settings(self):
+        """Validate critical settings across all environments.
+
+        In production: fail hard on missing settings.
+        In non-production: warn only (to avoid breaking local dev).
+        """
+        critical_settings = {
+            "DATABASE_URL": self.DATABASE_URL,
+            "JWT_SECRET": self.JWT_SECRET,
+            "CSRF_SECRET": self.CSRF_SECRET,
+        }
+        missing = [name for name, value in critical_settings.items() if not value]
+
+        if not missing:
+            return self
+
+        msg = f"Missing required settings: {', '.join(missing)}. Set them via .env or environment variables."
+
         if self.ENVIRONMENT == "production":
-            missing = []
-            if not self.DATABASE_URL:
-                missing.append("DATABASE_URL")
-            if not self.JWT_SECRET:
-                missing.append("JWT_SECRET")
-            if not self.SUPABASE_URL:
-                missing.append("SUPABASE_URL")
-            if not self.SUPABASE_ANON_KEY:
-                missing.append("SUPABASE_ANON_KEY")
-            if missing:
-                raise ValueError(
-                    f"Missing required settings in production: {', '.join(missing)}. "
-                    "Set them via environment variables or .env file."
-                )
+            raise ValueError(msg)
+
+        import warnings
+        warnings.warn(f"{msg} — app may fail at runtime")
         return self
 
     model_config = {
