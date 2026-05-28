@@ -9,6 +9,7 @@ from app.models.user import User
 from app.services.credits import CreditService
 
 VALID_PLANS = {"free", "pro", "creator", "starter", "growth", "enterprise"}
+MAX_WEBHOOK_CREDITS = 1_000_000
 
 
 def _safe_webhook_plan(plan: str | None) -> str:
@@ -18,13 +19,17 @@ def _safe_webhook_plan(plan: str | None) -> str:
     return plan
 
 
-def _safe_webhook_credits(credits: int | None) -> int:
-    """Validate and sanitize credits from Stripe metadata."""
+def _safe_webhook_credits(credits: str | int | None) -> int:
+    """Validate and sanitize credits from Stripe metadata.
+
+    Stripe metadata values are always strings, but the default
+    may be an int, hence str | int | None.
+    """
     try:
         credits_int = int(credits if credits is not None else 100)
     except (TypeError, ValueError):
         credits_int = 100
-    return max(credits_int, 0)
+    return max(0, min(credits_int, MAX_WEBHOOK_CREDITS))
 
 
 settings = get_settings()

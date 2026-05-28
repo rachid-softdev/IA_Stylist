@@ -103,3 +103,8 @@ class TestSafeWebhookCredits:
     def test_negative_float_clamped(self):
         """Negative float should become 0 after max(..., 0)."""
         assert _safe_webhook_credits(-0.5) == 0
+
+    def test_credits_capped_at_max(self):
+        """Values above MAX_WEBHOOK_CREDITS should be capped."""
+        from app.routers.webhooks import MAX_WEBHOOK_CREDITS
+        assert _safe_webhook_credits(MAX_WEBHOOK_CREDITS + 1) == MAX_WEBHOOK_CREDITS

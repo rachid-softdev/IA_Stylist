@@ -31,9 +31,12 @@ class ApiClient {
   ): Promise<ApiResponse<T>> {
     const url = `${this.baseUrl}${path}`
 
+    // Destructurer options pour séparer headers du reste
+    const { headers: optHeaders, ...restOptions } = options ?? {}
+
     const headers: Record<string, string> = {
       'Content-Type': 'application/json',
-      ...((options?.headers as Record<string, string>) || {}),
+      ...((optHeaders as Record<string, string>) || {}),
     }
 
     // 🔥 CSRF : Lire le cookie et extraire le token brut (avant le '.')
@@ -54,7 +57,7 @@ class ApiClient {
       method,
       headers,
       credentials: 'include',
-      ...options,
+      ...restOptions,
     }
 
     if (body && method !== 'GET') {
