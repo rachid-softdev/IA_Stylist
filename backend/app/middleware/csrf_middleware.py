@@ -41,6 +41,14 @@ class CSRFMiddleware(BaseHTTPMiddleware):
     """
     
     async def dispatch(self, request: Request, call_next: RequestResponseEndpoint):
+        # 🔒 Skip CSRF for requests using API key auth
+        # SECURITY NOTE: This relies on CORS — X-API-Key is NOT in Access-Control-Allow-Headers
+        # (configured in main.py line 77), so cross-origin requests with X-API-Key are blocked
+        # by the browser preflight. If X-API-Key is ever added to allowed CORS headers,
+        # this bypass must be re-evaluated.
+        if "X-API-Key" in request.headers:
+            return await call_next(request)
+
         # 1. VALIDATION CSRF AVANT handler (for state-changing methods)
         if request.method not in SAFE_METHODS and not self._is_exempt(request):
             cookie_token = request.cookies.get(CSRF_COOKIE_NAME)
