@@ -12,6 +12,10 @@ from app.db.session import async_session
 from app.models.api_key import ApiKey
 from app.models.brand import Brand
 from app.services.security import verify_api_key, extract_key_prefix
+from app.services.api_key_rate_limiter import ApiKeyFailureRateLimiter
+
+# Per-worker in-memory rate limiter for API key auth failures
+_rate_limiter = ApiKeyFailureRateLimiter()
 
 logger = logging.getLogger(__name__)
 
@@ -48,6 +52,17 @@ class ApiKeyMiddleware(BaseHTTPMiddleware):
 
         auth_result = await self._authenticate(raw_key)
         if auth_result is None:
+            # 🔒 In-memory rate limiting on API key failures
+            client_ip = request.client.host or "unknown"
+            _rate_limiter.record_failure(client_ip)
+            if _rate_limiter.is_rate_limited(client_ip):
+                raise HTTPException(
+                    status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+                    detail={
+                        "code": "TOO_MANY_API_KEY_FAILURES",
+                        "message": "Too many API key failures. Try again later.",
+                    },
+                )
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail={
@@ -57,6 +72,10 @@ class ApiKeyMiddleware(BaseHTTPMiddleware):
             )
 
         brand_id, brand_plan = auth_result
+
+        # 🔒 Reset failure counter on success
+        client_ip = request.client.host or "unknown"
+        _rate_limiter.record_success(client_ip)
 
         request.state.current_user_id = brand_id
         request.state.current_user_plan = brand_plan
@@ -82,7 +101,7 @@ class ApiKeyMiddleware(BaseHTTPMiddleware):
                         ),
                     )
                 )
-                result = await db.execute(stmt)
+                result = await db.execute(stmt.limit(5))
                 candidates: list[ApiKey] = list(result.scalars().all())
 
                 if not candidates:

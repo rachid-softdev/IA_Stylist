@@ -1,6 +1,7 @@
-"""Rate limiting middleware backed by Redis."""
+"""Rate limiting middleware backed by Redis with in-memory fallback."""
 import datetime
 import logging
+import time
 from fastapi import Request, HTTPException, status
 from starlette.middleware.base import BaseHTTPMiddleware
 from app.config import get_settings
@@ -8,6 +9,40 @@ from app.services.redis import get_redis
 
 logger = logging.getLogger(__name__)
 settings = get_settings()
+
+
+class InMemoryRateLimiter:
+    """Fallback rate limiter when Redis is unavailable.
+
+    Per-worker in-memory store with sliding window per user.
+    Less strict than Redis mode (each worker has independent state),
+    but provides essential protection during Redis outages.
+    """
+
+    def __init__(self, default_limit: int = 30, window_seconds: int = 60):
+        self.default_limit = default_limit
+        self.window_seconds = window_seconds
+        self._store: dict[str, list[float]] = {}
+
+    def _prune(self, key: str, now: float) -> None:
+        if key in self._store:
+            self._store[key] = [
+                t for t in self._store[key]
+                if now - t < self.window_seconds
+            ]
+            if not self._store[key]:
+                del self._store[key]
+
+    def check(self, key: str, limit: int) -> bool:
+        """Returns True if request is allowed, False if rate limited."""
+        now = time.time()
+        self._prune(key, now)
+        if key not in self._store:
+            self._store[key] = []
+        if len(self._store[key]) >= limit:
+            return False
+        self._store[key].append(now)
+        return True
 
 
 class RateLimitMiddleware(BaseHTTPMiddleware):
@@ -23,6 +58,10 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
     Requires AuthMiddleware to run first so request.state.current_user_plan is set.
     Falls back to 'free' plan if no auth info is available.
     """
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._fallback = InMemoryRateLimiter()
 
     async def dispatch(self, request: Request, call_next):
         # Only rate limit API routes
@@ -64,7 +103,27 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
         except HTTPException:
             raise
         except Exception as e:
-            # If Redis is unavailable, log and allow the request
-            logger.error("Rate limiter error (allowing request): %s", str(e))
+            # 🔒 Fallback : rate limiting en mémoire quand Redis est indisponible
+            logger.error("Rate limiter fallback (Redis unavailable): %s", str(e))
+
+            user_id = getattr(request.state, "current_user_id", None)
+            if not user_id:
+                forwarded_for = request.headers.get("X-Forwarded-For", "")
+                user_id = (
+                    forwarded_for.split(",")[0].strip()
+                    if forwarded_for
+                    else (request.client.host or "unknown")
+                )
+            fallback_key = f"fallback:{user_id}:{plan}"
+
+            if not self._fallback.check(fallback_key, limit):
+                raise HTTPException(
+                    status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+                    detail={
+                        "code": "RATE_LIMITED",
+                        "message": "Rate limit exceeded (degraded mode). Please wait.",
+                        "details": {"retry_after": 60, "limit": limit},
+                    },
+                )
 
         return await call_next(request)

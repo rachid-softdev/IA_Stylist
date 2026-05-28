@@ -48,9 +48,15 @@ class AuthMiddleware(BaseHTTPMiddleware):
                     token,
                     settings.JWT_SECRET,
                     algorithms=["HS256"],
-                    options={"verify_aud": False},  # Intentional: Supabase JWTs don't include an 'aud' claim we can validate; disabling prevents decode failure while still verifying signature, exp, iss.
+                    options={"verify_aud": False},
                 )
-                
+
+                # 🔒 Vérifier l'issuer (iss) — correspond au projet Supabase
+                iss = payload.get("iss")
+                if not iss or not iss.startswith(settings.SUPABASE_URL):
+                    logger.warning("JWT issuer mismatch: got '%s', expected Supabase URL", iss)
+                    raise ValueError(f"JWT issuer mismatch: got '{iss}'")
+
                 request.state.current_user_id = payload.get("sub")
                 request.state.current_user_plan = payload.get("plan", "free")
                 

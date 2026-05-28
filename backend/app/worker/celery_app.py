@@ -27,6 +27,10 @@ celery_app.conf.update(
         "app.worker.tasks.cleanup.*": {"queue": "low"},
         "app.worker.tasks.generate_lookbook.*": {"queue": "low"},
     },
+    # ⚠️ CRITICAL: Credits are deducted in the API handler, NOT in Celery tasks.
+    # If deduction logic is ever moved into a worker, the idempotency_key column
+    # on GenerationJob MUST be used to prevent double-deduction on retries.
+    # See backend/app/models/job.py for the idempotency_key field.
     task_acks_late=True,
     task_reject_on_worker_lost=True,
     task_default_retry_delay=60,
