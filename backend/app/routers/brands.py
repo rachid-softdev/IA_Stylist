@@ -6,7 +6,7 @@ from pydantic import BaseModel, Field
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 
-from app.dependencies import get_current_user, get_current_brand_admin
+from app.dependencies import get_current_user, get_current_brand_admin, get_current_brand_admin_me
 from app.db.session import get_db
 from app.models.user import User
 from app.models.brand import Brand, BrandMember
@@ -56,58 +56,26 @@ async def create_brand(
 
 @router.get("/me", response_model=BrandResponse)
 async def get_my_brand(
-    user: User = Depends(get_current_user),
-    db: AsyncSession = Depends(get_db),
+    user_brand: tuple[User, Brand] = Depends(get_current_brand_admin_me),
 ):
     """Get current user's brand."""
-    # Find brand where user is member
-    result = await db.execute(
-        select(Brand)
-        .join(BrandMember, Brand.id == BrandMember.brand_id)
-        .where(BrandMember.user_id == user.id)
-        .limit(1)
-    )
-    brand = result.scalar_one_or_none()
-
-    if not brand:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail={"code": "NO_BRAND", "message": "No brand associated with this account"},
-        )
-
-    return brand
+    return user_brand[1]
 
 
 @router.put("/me", response_model=BrandResponse)
 async def update_brand(
     body: BrandCreateRequest,
-    user: User = Depends(get_current_user),
+    user_brand: tuple[User, Brand] = Depends(get_current_brand_admin_me),
     db: AsyncSession = Depends(get_db),
 ):
-    """Update brand details. Finds the brand by the user's membership."""
-    # Find brand where user is member
-    result = await db.execute(
-        select(Brand)
-        .join(BrandMember, Brand.id == BrandMember.brand_id)
-        .where(BrandMember.user_id == user.id)
-        .limit(1)
-    )
-    brand = result.scalar_one_or_none()
-
-    if not brand:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail={"code": "NO_BRAND", "message": "No brand associated with this account"},
-        )
-
+    """Update brand details."""
+    brand = user_brand[1]
     if body.name:
         brand.name = body.name
     if body.shopify_url:
         brand.shopify_url = body.shopify_url
-
     await db.commit()
     await db.refresh(brand)
-
     return brand
 
 

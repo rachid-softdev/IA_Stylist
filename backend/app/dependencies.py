@@ -167,6 +167,33 @@ async def get_current_brand_admin(
     return user
 
 
+async def get_current_brand_admin_me(
+    request: Request,
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+) -> tuple[User, "Brand"]:
+    """Get current user's brand and verify admin role.
+
+    Used by /me endpoints where brand_id is not in path params.
+    Returns (user, brand) tuple.
+    """
+    from app.models.brand import Brand, BrandMember
+
+    result = await db.execute(
+        select(Brand)
+        .join(BrandMember, Brand.id == BrandMember.brand_id)
+        .where(BrandMember.user_id == user.id, BrandMember.role == "admin")
+        .limit(1)
+    )
+    brand = result.scalar_one_or_none()
+    if not brand:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail={"code": "FORBIDDEN", "message": "Brand admin access required"},
+        )
+    return user, brand
+
+
 async def verify_brand_membership(
     request: Request,
     user: Optional[User] = Depends(get_optional_user),
