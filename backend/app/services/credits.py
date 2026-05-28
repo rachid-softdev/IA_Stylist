@@ -1,10 +1,14 @@
+import logging
 from datetime import datetime
 from typing import Optional
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, update
+from sqlalchemy.exc import IntegrityError
 
 from app.models.user import User
 from app.models.credit import CreditTransaction
+
+logger = logging.getLogger(__name__)
 
 
 class CreditService:
@@ -41,11 +45,19 @@ class CreditService:
             return False
         
         # Deduct credits
-        await self.db.execute(
-            update(User)
-            .where(User.id == user_id)
-            .values(credits=User.credits - amount)
-        )
+        try:
+            await self.db.execute(
+                update(User)
+                .where(User.id == user_id)
+                .values(credits=User.credits - amount)
+            )
+        except IntegrityError:
+            logger.critical(
+                "Credit CHECK constraint violated! user=%s amount=%d balance=%d",
+                user_id, amount, user.credits if user else -1,
+            )
+            await self.db.rollback()
+            return False
         
         # Log transaction
         transaction = CreditTransaction(

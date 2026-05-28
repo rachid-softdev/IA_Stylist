@@ -17,6 +17,9 @@ class GenerationJob(BaseModel):
     )
     job_type: Mapped[str] = mapped_column(String(20), nullable=False)
     status: Mapped[str] = mapped_column(String(20), default="queued", index=True)
+    idempotency_key: Mapped[Optional[str]] = mapped_column(
+        String(64), unique=True, nullable=True, index=True
+    )
     garment_id: Mapped[Optional[str]] = mapped_column(
         String(36), ForeignKey("garments.id", ondelete="SET NULL"), nullable=True
     )
