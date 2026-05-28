@@ -11,6 +11,7 @@ from app.config import get_settings
 from app.middleware.logging import LoggingMiddleware
 from app.services.redis import init_redis
 from app.middleware.auth_middleware import AuthMiddleware
+from app.middleware.api_key import ApiKeyMiddleware
 from app.middleware.rate_limit import RateLimitMiddleware
 from app.middleware.csrf_middleware import CSRFMiddleware
 from app.routers import auth, upload, generate, credits, dressing, brands, catalog, analytics, webhooks, stylist
@@ -63,6 +64,8 @@ app.add_middleware(LoggingMiddleware)
 app.add_middleware(RateLimitMiddleware)
 
 app.add_middleware(AuthMiddleware)
+
+app.add_middleware(ApiKeyMiddleware)
 
 app.add_middleware(CSRFMiddleware)
 

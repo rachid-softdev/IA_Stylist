@@ -1,3 +1,4 @@
+import hashlib
 import uuid
 import structlog
 from fastapi import Request
@@ -5,6 +6,13 @@ from starlette.middleware.base import BaseHTTPMiddleware
 import time
 
 logger = structlog.get_logger()
+
+
+def _anonymize_id(user_id: str | None) -> str | None:
+    """Anonymize user ID for logging: one-way SHA-256 hash, truncated to 12 chars."""
+    if not user_id:
+        return None
+    return hashlib.sha256(user_id.encode()).hexdigest()[:12]
 
 
 class LoggingMiddleware(BaseHTTPMiddleware):
@@ -26,7 +34,7 @@ class LoggingMiddleware(BaseHTTPMiddleware):
             path=request.url.path,
             status_code=response.status_code,
             duration_ms=duration_ms,
-            user_id=getattr(getattr(request.state, "current_user", None), "id", None),
+            user_hash=_anonymize_id(getattr(getattr(request.state, "current_user", None), "id", None)),
         )
 
         response.headers["X-Request-ID"] = request_id

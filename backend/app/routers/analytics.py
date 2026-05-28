@@ -2,9 +2,8 @@ from fastapi import APIRouter, Depends, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, func
 
-from app.dependencies import get_current_user
+from app.dependencies import verify_brand_admin_access
 from app.db.session import get_db
-from app.models.user import User
 from app.models.job import GenerationJob
 from app.models.garment import Garment
 from app.schemas.common import AnalyticsOverviewResponse
@@ -12,10 +11,9 @@ from app.schemas.common import AnalyticsOverviewResponse
 router = APIRouter()
 
 
-@router.get("/overview")
+@router.get("/{brand_id}/overview")
 async def get_overview(
-    brand_id: str,
-    user: User = Depends(get_current_user),
+    brand_id: str = Depends(verify_brand_admin_access),
     db: AsyncSession = Depends(get_db),
 ):
     """Get analytics overview KPIs."""
