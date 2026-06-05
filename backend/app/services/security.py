@@ -40,3 +40,29 @@ def extract_key_last4(raw_key: str) -> str:
 
 def generate_share_token() -> str:
     return uuid.uuid4().hex[:12]
+
+
+async def verify_ws_token(token: str) -> str | None:
+    """Verify a JWT token for WebSocket connections.
+    
+    Supports both Supabase JWT and API key authentication.
+    Returns the user_id if valid, None otherwise.
+    """
+    import httpx
+    
+    settings = get_settings()
+    try:
+        async with httpx.AsyncClient() as client:
+            resp = await client.get(
+                f"{settings.SUPABASE_URL}/auth/v1/user",
+                headers={
+                    "Authorization": f"Bearer {token}",
+                    "apikey": settings.SUPABASE_ANON_KEY,
+                },
+                timeout=5.0,
+            )
+            if resp.status_code == 200:
+                return resp.json().get("id")
+    except Exception:
+        pass
+    return None

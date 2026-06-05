@@ -1,0 +1,16 @@
+{
+  "name": "@vfs/widget-sdk",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Shopify embed widget for Virtual Fashion Studio",
+  "main": "dist/widget.js",
+  "scripts": {
+    "build": "esbuild src/index.ts --bundle --minify --outfile=dist/widget.js --format=iife --global-name=VFSWidget",
+    "dev": "esbuild src/index.ts --bundle --outfile=dist/widget.js --format=iife --global-name=VFSWidget --watch",
+    "test": "vitest run"
+  },
+  "devDependencies": {
+    "esbuild": "^0.20.0",
+    "vitest": "^1.0.0"
+  }
+}

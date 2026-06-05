@@ -144,6 +144,13 @@ class BrandResponse(BaseModel):
     model_config = {"from_attributes": True}
 
 
+class BrandMeResponse(BrandResponse):
+    member_count: int = 0
+    last_generation_at: Optional[datetime] = None
+    credits_usage_pct: float = 0.0
+    monthly_credits: int = 500
+
+
 class BrandCreateRequest(BaseModel):
     name: str
     shopify_url: Optional[str] = None
