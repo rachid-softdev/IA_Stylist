@@ -1,3 +1,4 @@
+import asyncio
 import logging
 from contextlib import asynccontextmanager
 from fastapi import FastAPI, Request
@@ -14,7 +15,7 @@ from app.middleware.auth_middleware import AuthMiddleware
 from app.middleware.api_key import ApiKeyMiddleware
 from app.middleware.rate_limit import RateLimitMiddleware
 from app.middleware.csrf_middleware import CSRFMiddleware
-from app.routers import auth, upload, generate, credits, dressing, brands, catalog, analytics, webhooks, stylist
+from app.routers import auth, upload, generate, credits, dressing, brands, catalog, analytics, webhooks, stylist, ws, widget
 
 settings = get_settings()
 
@@ -30,7 +31,6 @@ if settings.SENTRY_DSN:
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Startup
-    # Configure SQLAlchemy logging (replaces deprecated echo= flag)
     if settings.ENVIRONMENT == "local":
         logging.getLogger("sqlalchemy.engine").setLevel(logging.WARNING)
 
@@ -41,12 +41,28 @@ async def lifespan(app: FastAPI):
     except Exception as e:
         logger.warning("Failed to ensure bucket exists: %s", str(e))
 
+    redis_available = True
     try:
         await init_redis()
     except Exception as e:
-        logger.warning("Redis init failed (rate limiting degraded): %s", str(e))
+        redis_available = False
+        logger.warning("Redis init failed (rate limiting, WS pub/sub degraded): %s", str(e))
+
+    ws_listener_task = None
+    if redis_available:
+        from app.services.ws_redis_bridge import listen_redis_events
+        ws_listener_task = asyncio.create_task(listen_redis_events())
+
     yield
+
     # Shutdown
+    if ws_listener_task:
+        ws_listener_task.cancel()
+        try:
+            await ws_listener_task
+        except asyncio.CancelledError:
+            pass
+
     from app.services.redis import close_redis
     await close_redis()
 
@@ -103,6 +119,8 @@ app.include_router(catalog.router, prefix="/v1/catalog", tags=["Catalog"])
 app.include_router(analytics.router, prefix="/v1/analytics", tags=["Analytics"])
 app.include_router(webhooks.router, prefix="/v1/webhooks", tags=["Webhooks"])
 app.include_router(stylist.router, prefix="/v1/stylist", tags=["AI Stylist"])
+app.include_router(ws.router, prefix="/v1", tags=["WebSocket"])
+app.include_router(widget.router, prefix="/v1/widget", tags=["Widget"])
 
 
 @app.get("/health")

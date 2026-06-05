@@ -76,6 +76,18 @@ def get_public_url(r2_key: str) -> str:
     return r2_key
 
 
+def upload_file_to_r2(r2_key: str, content: bytes, content_type: str) -> str:
+    """Upload file content directly to R2. Returns public URL."""
+    client = _get_client()
+    client.put_object(
+        Bucket=settings.R2_BUCKET,
+        Key=r2_key,
+        Body=content,
+        ContentType=content_type,
+    )
+    return get_public_url(r2_key)
+
+
 def ensure_bucket_exists():
     """Ensure the R2 bucket exists, create if needed."""
     client = _get_client()

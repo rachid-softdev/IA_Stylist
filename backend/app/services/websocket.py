@@ -1,12 +1,16 @@
 import json
 import logging
 from typing import Optional
-import httpx
+
 from app.config import get_settings
+from app.services.redis import get_redis
+from app.services.ws_manager import manager
 
 logger = logging.getLogger(__name__)
 
 settings = get_settings()
+
+CHANNEL_WS_EVENTS = "ws:events"
 
 
 async def push_job_update(
@@ -17,14 +21,6 @@ async def push_job_update(
     error_message: Optional[str] = None,
     progress: Optional[float] = None,
 ) -> None:
-    """
-    Push a job status update via Supabase Realtime.
-    Falls back to no-op if Realtime is not configured.
-
-    NOTE: Publishing requires either SERVICE_ROLE_KEY or a custom API key with
-    Realtime broadcast permission. For production, create a restricted key in
-    the Supabase dashboard and set SUPABASE_REALTIME_KEY.
-    """
     payload = {
         "type": "job_update",
         "job_id": job_id,
@@ -35,28 +31,33 @@ async def push_job_update(
         "user_id": user_id,
     }
 
-    try:
-        # Publish via Supabase Realtime REST API
-        # NOTE: Publishing requires either SERVICE_ROLE_KEY or a custom API key with
-        # Realtime broadcast permission. For production, create a restricted key in
-        # the Supabase dashboard and set SUPABASE_REALTIME_KEY.
-        realtime_key = settings.SUPABASE_REALTIME_KEY or settings.SUPABASE_SERVICE_ROLE_KEY
-        async with httpx.AsyncClient() as client:
-            await client.post(
-                f"{settings.SUPABASE_URL}/rest/v1/rpc/publish",
-                headers={
-                    "apikey": realtime_key,
-                    "Authorization": f"Bearer {realtime_key}",
-                    "Content-Type": "application/json",
-                },
-                json={
-                    "channel": f"user_{user_id}",
-                    "payload": json.dumps(payload),
-                },
-                timeout=5.0,
+    sent = await manager.send_to_user(user_id, payload)
+
+    if sent == 0:
+        try:
+            r = await get_redis()
+            await r.publish(CHANNEL_WS_EVENTS, json.dumps(payload))
+        except Exception as e:
+            logger.warning(
+                "Redis publish failed: user=%s job=%s error=%s",
+                user_id, job_id, str(e),
             )
-    except Exception as e:
-        logger.warning(
-            "WebSocket push failed: user=%s job=%s status=%s error=%s",
-            user_id, job_id, status, str(e),
-        )
+
+
+async def push_brand_update(
+    brand_id: str,
+    payload: dict,
+) -> None:
+    sent = await manager.send_to_room(f"brand_{brand_id}", payload)
+    if sent == 0:
+        try:
+            r = await get_redis()
+            await r.publish(CHANNEL_WS_EVENTS, json.dumps({
+                **payload,
+                "_brand_id": brand_id,
+            }))
+        except Exception as e:
+            logger.warning(
+                "Redis publish brand update failed: brand=%s error=%s",
+                brand_id, str(e),
+            )
