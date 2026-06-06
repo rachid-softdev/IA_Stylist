@@ -3,6 +3,7 @@ import os
 # Must be set BEFORE any app imports to ensure settings are loaded
 os.environ.setdefault("DATABASE_URL", "postgresql+asyncpg://vfs:vfs@localhost:5432/vfs_test")
 os.environ.setdefault("JWT_SECRET", "test-jwt-secret-not-for-production")
+os.environ.setdefault("CSRF_SECRET", "test-csrf-secret-not-for-production")
 os.environ.setdefault("ENVIRONMENT", "test")
 
 import pytest
