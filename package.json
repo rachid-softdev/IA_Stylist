@@ -15,9 +15,15 @@
     "db:migrate": "cd backend && alembic upgrade head",
     "db:generate": "cd backend && alembic revision --autogenerate -m",
     "docker:up": "docker compose -f infra/docker-compose.yml up -d",
-    "docker:down": "docker compose -f infra/docker-compose.yml down"
+    "docker:down": "docker compose -f infra/docker-compose.yml down",
+    "changeset": "changeset",
+    "version-packages": "changeset version",
+    "release": "changeset tag",
+    "ci:release": "pnpm changeset version && pnpm install --no-frozen-lockfile && pnpm build && pnpm changeset tag"
   },
   "devDependencies": {
+    "@changesets/changelog-github": "^0.5.0",
+    "@changesets/cli": "^2.27.0",
     "@turbo/gen": "^2.0.0",
     "prettier": "^3.3.0",
     "turbo": "^2.0.0",
