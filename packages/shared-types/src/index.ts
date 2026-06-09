@@ -162,6 +162,7 @@ export interface ApiResponse<T> {
     page?: number
     page_size?: number
     total?: number
+    total_pages?: number
     next_cursor?: string | null
   }
   error: null

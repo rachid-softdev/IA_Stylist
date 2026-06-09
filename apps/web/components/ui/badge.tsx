@@ -4,6 +4,7 @@ import { getJobStatusLabel as getLabel } from '@vfs/utils'
 interface BadgeProps {
   status: string
   className?: string
+  children?: React.ReactNode
 }
 
 const colorMap: Record<string, string> = {
@@ -16,7 +17,7 @@ const colorMap: Record<string, string> = {
   inactive: 'bg-text-tertiary/10 text-text-tertiary border-text-tertiary/30',
 }
 
-export function Badge({ status, className }: BadgeProps) {
+export function Badge({ status, className, children }: BadgeProps) {
   return (
     <span
       className={cn(
@@ -25,7 +26,7 @@ export function Badge({ status, className }: BadgeProps) {
         className,
       )}
     >
-      {getLabel(status)}
+      {children ?? getLabel(status)}
     </span>
   )
 }

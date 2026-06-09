@@ -1,18 +1,20 @@
 import { NextRequest, NextResponse } from 'next/server'
 import Stripe from 'stripe'
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', {
-  apiVersion: '2024-06-20',
-})
-
 const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET || ''
+
+function getStripe() {
+  const key = process.env.STRIPE_SECRET_KEY
+  if (!key) throw new Error('STRIPE_SECRET_KEY is not set')
+  return new Stripe(key, { apiVersion: '2026-05-27.dahlia' })
+}
 
 export async function POST(request: NextRequest) {
   const body = await request.text()
   const signature = request.headers.get('stripe-signature') || ''
 
   try {
-    const event = stripe.webhooks.constructEvent(body, signature, webhookSecret)
+    const event = getStripe().webhooks.constructEvent(body, signature, webhookSecret)
 
     // Forward to backend
     await fetch(`${process.env.NEXT_PUBLIC_API_URL}/v1/webhooks/stripe`, {

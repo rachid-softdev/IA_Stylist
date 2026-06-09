@@ -37,7 +37,7 @@ module.exports = {
       },
       fontFamily: {
         display: ['Canela', 'Freight Display', 'Georgia', 'serif'],
-        heading: ["Suisse Int'l Mono", 'JetBrains Mono', 'monospace'],
+        heading: ['"Suisse Int\'l Mono"', 'JetBrains Mono', 'monospace'],
         body: ['Söhne', 'Aktiv Grotesk', 'Helvetica Neue', 'sans-serif'],
         mono: ['JetBrains Mono', 'Fira Code', 'monospace'],
       },

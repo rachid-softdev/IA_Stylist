@@ -9,6 +9,7 @@
  * Uses vitest with jsdom environment to simulate browser APIs.
  */
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
+interface ApiClientErrorLike { code: string; message: string; status: number; details?: Record<string, unknown> }
 
 // ─── Mocks ──────────────────────────────────────────────────────────────
 
@@ -188,10 +189,10 @@ describe('ApiClientError', () => {
       expect('should throw').toBe('but did not')
     } catch (err) {
       expect(err).toBeInstanceOf(ApiClientError)
-      expect((err as ApiClientError).code).toBe('RATE_LIMITED')
-      expect((err as ApiClientError).message).toBe('Too fast')
-      expect((err as ApiClientError).status).toBe(429)
-      expect((err as ApiClientError).details).toEqual({ retry_after: 60 })
+      expect((err as unknown as ApiClientErrorLike).code).toBe('RATE_LIMITED')
+      expect((err as unknown as ApiClientErrorLike).message).toBe('Too fast')
+      expect((err as unknown as ApiClientErrorLike).status).toBe(429)
+      expect((err as unknown as ApiClientErrorLike).details).toEqual({ retry_after: 60 })
     }
   })
 
@@ -209,9 +210,9 @@ describe('ApiClientError', () => {
       await api.get('/test')
     } catch (err) {
       expect(err).toBeInstanceOf(ApiClientError)
-      expect((err as ApiClientError).code).toBe('UNKNOWN')
-      expect((err as ApiClientError).message).toBe('Request failed')
-      expect((err as ApiClientError).status).toBe(500)
+      expect((err as unknown as ApiClientErrorLike).code).toBe('UNKNOWN')
+      expect((err as unknown as ApiClientErrorLike).message).toBe('Request failed')
+      expect((err as unknown as ApiClientErrorLike).status).toBe(500)
     }
   })
 

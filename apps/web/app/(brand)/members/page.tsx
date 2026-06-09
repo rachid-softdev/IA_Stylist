@@ -68,7 +68,7 @@ export default function MembersPage() {
           <div className="py-12 text-center text-sm text-text-secondary">Chargement...</div>
         ) : (
           <div>
-            {(members?.data || []).map((member: BrandMember) => (
+            {(members || []).map((member: BrandMember) => (
               <div
                 key={member.user_id}
                 className="flex items-center justify-between border-b border-border-subtle px-4 py-3 last:border-0"
@@ -96,7 +96,7 @@ export default function MembersPage() {
                 )}
               </div>
             ))}
-            {(!members?.data || members.data.length === 0) && (
+            {(!members || members.length === 0) && (
               <div className="py-12 text-center">
                 <Mail className="mx-auto h-8 w-8 text-text-tertiary" />
                 <p className="mt-3 text-sm text-text-secondary">
