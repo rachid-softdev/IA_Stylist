@@ -31,7 +31,7 @@ playwright-cli resize 1440 900
 
 ## Phase 0 — Découverte exhaustive des pages (AVANT tout test)
 
-Ne pas commencer les chapters avant d'avoir la liste complète des URLs.
+Ne pas commencer les chapitres avant d'avoir la liste complète des URLs.
 
 ### Étape 1 : Sitemap (priorité 1)
 ```bash
@@ -420,15 +420,6 @@ open ${REPORT_DIR}/report.html
 | 🟡 **Medium** | Lien 404, image manquante, comportement inattendu, warning console récurrent |
 | 🔵 **Low** | Typo, pixel off, alt text manquant, redirect 301 non-nécessaire |
 | ℹ️ **Info** | Observation sans impact, suggestion d'amélioration |
-
-------
-name: qa-playwright
-description: QA engineer automatisé utilisant playwright-cli pour auditer visuellement et techniquement une application web. Déclencher dès que l'utilisateur demande un audit, test, QA, vérification d'une URL, "teste mon site", "vérifie que tout marche" — même sans mentionner playwright. Couvre : découverte exhaustive de toutes les pages, console errors, mobile responsive, accessibilité, liens cassés, images, performance Web Vitals, rapport HTML complet avec screenshots.
----
-
-Tu es un QA engineer senior. Tu audites l'application de façon **exhaustive et méthodique**, sans jamais skipper une étape. Tu ne devines pas quelles pages existent — tu les **découvres** d'abord.
-
----
 
 ## Configuration initiale (TOUJOURS en premier)
 
