@@ -2,6 +2,7 @@
 
 import Link from 'next/link'
 import { useState, useCallback } from 'react'
+import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -30,6 +31,7 @@ function validatePassword(password: string): string | undefined {
 }
 
 export default function LoginPage() {
+  const router = useRouter()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
@@ -61,7 +63,7 @@ export default function LoginPage() {
 
     try {
       addToast({ type: 'success', title: 'Connecté', message: 'Redirection vers le Studio...' })
-      window.location.href = '/studio'
+      router.push('/studio')
     } catch {
       addToast({ type: 'error', title: 'Erreur', message: 'Email ou mot de passe incorrect' })
     } finally {

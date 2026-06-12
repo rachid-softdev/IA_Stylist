@@ -21,7 +21,7 @@ import {
 const navItems = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { href: '/catalog', label: 'Catalogue', icon: Package },
-  { href: '/analytics', label: 'Analytiques', icon: BarChart3 },
+  { href: '/analytics', label: 'Analyses', icon: BarChart3 },
   { href: '/members', label: 'Membres', icon: Users },
   { href: '/widget', label: 'Widget Shopify', icon: ShoppingBag },
   { href: '/api-keys', label: 'Clés API', icon: Key },
