@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { useStudioStore } from '@/stores/studio-store'
 import { useToastStore } from '@/stores/toast-store'
@@ -125,6 +125,26 @@ export default function StudioPage() {
 
   const isReady = !!activePhoto && !!selectedGarment
 
+  // Keyboard shortcuts
+  useEffect(() => {
+    function handleKeyDown(e: KeyboardEvent) {
+      // Cmd/Ctrl + Enter → generate
+      if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
+        e.preventDefault()
+        if (isReady && !isGenerating && !resultUrl) {
+          handleGenerate()
+        }
+      }
+      // Escape → reset result
+      if (e.key === 'Escape' && resultUrl) {
+        reset()
+      }
+    }
+
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [isReady, isGenerating, resultUrl, handleGenerate, reset])
+
   return (
     <motion.div
       className="animate-fade-in"
@@ -205,12 +225,17 @@ export default function StudioPage() {
 
           {/* Generate button */}
           {!isGenerating && !resultUrl && (
-            <div className="flex justify-center">
+            <div className="flex flex-col items-center gap-2">
               <GenerateButton
                 onClick={handleGenerate}
                 disabled={!isReady}
                 credits={1}
               />
+              {isReady && (
+                <kbd className="hidden font-mono text-2xs text-text-tertiary md:inline-block">
+                  ⌘⏎ pour générer
+                </kbd>
+              )}
             </div>
           )}
         </div>

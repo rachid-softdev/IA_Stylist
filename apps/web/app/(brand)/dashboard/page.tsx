@@ -90,58 +90,68 @@ export default function BrandDashboardPage() {
 
       {/* KPI Row */}
       <motion.div variants={item} className="mb-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        {[
-          {
-            label: 'Try-ons',
-            value: data?.metrics.tryons ?? 1234,
-            delta: data?.deltas.tryons ?? '+12%',
-            icon: Package,
-            positive: true,
-          },
-          {
-            label: 'Conversion',
-            value: data?.metrics.conversion ? `${data.metrics.conversion}%` : '3.2%',
-            delta: data?.deltas.conversion ?? '+0.5%',
-            icon: TrendingUp,
-            positive: true,
-          },
-          {
-            label: 'Retours évités',
-            value: data?.metrics.returns_prevented ?? 308,
-            delta: data?.deltas.returns ?? '-25%',
-            icon: RefreshCw,
-            positive: false,
-          },
-          {
-            label: 'Économies',
-            value: data?.metrics.savings ? `${data.metrics.savings}€` : '46k€',
-            delta: data?.deltas.savings ?? '+8%',
-            icon: DollarSign,
-            positive: true,
-          },
-        ].map((kpi) => {
-          const Icon = kpi.icon
-          const isPositive = !kpi.delta.startsWith('-')
+        {isLoading ? (
+          Array.from({ length: 4 }).map((_, i) => (
+            <Card key={i} hover={false}>
+              <Skeleton className="mb-2 h-3 w-16" />
+              <Skeleton className="h-8 w-24" />
+              <Skeleton className="mt-2 h-3 w-20" />
+            </Card>
+          ))
+        ) : !data ? (
+          <div className="col-span-full flex items-center justify-center rounded-lg border border-dashed border-border-default py-12 text-center">
+            <div>
+              <BarChart3 className="mx-auto h-8 w-8 text-text-tertiary" />
+              <p className="mt-3 text-sm text-text-secondary">
+                Aucune donnée disponible pour le moment
+              </p>
+              <p className="mt-1 text-xs text-text-tertiary">
+                Importez vos premiers produits pour voir les statistiques
+              </p>
+            </div>
+          </div>
+        ) : (
+          [
+            {
+              label: 'Try-ons',
+              value: data.metrics.tryons,
+              delta: data.deltas.tryons,
+              icon: Package,
+            },
+            {
+              label: 'Conversion',
+              value: `${data.metrics.conversion}%`,
+              delta: data.deltas.conversion,
+              icon: TrendingUp,
+            },
+            {
+              label: 'Retours évités',
+              value: data.metrics.returns_prevented,
+              delta: data.deltas.returns,
+              icon: RefreshCw,
+            },
+            {
+              label: 'Économies',
+              value: `${data.metrics.savings.toLocaleString('fr-FR')}€`,
+              delta: data.deltas.savings,
+              icon: DollarSign,
+            },
+          ].map((kpi) => {
+            const Icon = kpi.icon
+            const isPositive = !kpi.delta.startsWith('-')
 
-          return (
-            <Card key={kpi.label} hover>
-              <div className="flex items-start justify-between">
-                <div className="min-w-0">
-                  <p className="text-xs text-text-tertiary uppercase tracking-widest">
-                    {kpi.label}
-                  </p>
-                  {isLoading ? (
-                    <Skeleton variant="text" className="mt-2 h-8 w-20" />
-                  ) : (
+            return (
+              <Card key={kpi.label} hover>
+                <div className="flex items-start justify-between">
+                  <div className="min-w-0">
+                    <p className="text-xs text-text-tertiary uppercase tracking-widest">
+                      {kpi.label}
+                    </p>
                     <p className="mt-1 truncate font-display text-2xl text-text-primary">
                       {typeof kpi.value === 'number'
                         ? kpi.value.toLocaleString('fr-FR')
                         : kpi.value}
                     </p>
-                  )}
-                  {isLoading ? (
-                    <Skeleton variant="text" className="mt-1 h-3 w-16" />
-                  ) : (
                     <p
                       className={`mt-0.5 text-xs ${
                         isPositive ? 'text-gen-done' : 'text-status-error'
@@ -149,13 +159,13 @@ export default function BrandDashboardPage() {
                     >
                       {kpi.delta} vs mois précédent
                     </p>
-                  )}
+                  </div>
+                  <Icon className="mt-0.5 h-5 w-5 shrink-0 text-text-tertiary" />
                 </div>
-                <Icon className="mt-0.5 h-5 w-5 shrink-0 text-text-tertiary" />
-              </div>
-            </Card>
-          )
-        })}
+              </Card>
+            )
+          })
+        )}
       </motion.div>
 
       {/* Charts */}
