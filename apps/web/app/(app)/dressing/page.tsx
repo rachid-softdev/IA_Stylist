@@ -42,9 +42,9 @@ export default function DressingPage() {
 
   const handleDelete = useCallback(async (jobId: string) => {
     setDeletingId(jobId)
-    setConfirmDeleteId(null)
     try {
       await api.delete(`/dressing/${jobId}`)
+      setConfirmDeleteId(null)
       addToast({ type: 'success', title: 'Supprimé' })
     } catch {
       addToast({ type: 'error', title: 'Erreur', message: 'Impossible de supprimer' })

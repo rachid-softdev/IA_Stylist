@@ -12,7 +12,7 @@ export default function BrandLayout({ children }: { children: React.ReactNode })
 
   useEffect(() => {
     if (!isLoading && !user) {
-      router.push('/auth/login')
+      router.push('/login')
     }
   }, [user, isLoading, router])
 

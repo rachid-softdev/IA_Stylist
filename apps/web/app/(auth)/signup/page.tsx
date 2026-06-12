@@ -2,6 +2,7 @@
 
 import Link from 'next/link'
 import { useState, useCallback } from 'react'
+import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -31,11 +32,14 @@ function validatePassword(password: string): string | undefined {
 }
 
 export default function SignupPage() {
+  const router = useRouter()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
   const [loading, setLoading] = useState(false)
   const [emailError, setEmailError] = useState<string | undefined>(undefined)
   const [passwordError, setPasswordError] = useState<string | undefined>(undefined)
+  const [confirmError, setConfirmError] = useState<string | undefined>(undefined)
   const { addToast } = useToastStore()
 
   const handleEmailChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
@@ -48,21 +52,28 @@ export default function SignupPage() {
     if (passwordError) setPasswordError(undefined)
   }, [passwordError])
 
+  const handleConfirmChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    setConfirmPassword(e.target.value)
+    if (confirmError) setConfirmError(undefined)
+  }, [confirmError])
+
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault()
 
     const eErr = validateEmail(email)
     const pErr = validatePassword(password)
+    const cErr = password !== confirmPassword ? 'Les mots de passe ne correspondent pas' : undefined
     setEmailError(eErr)
     setPasswordError(pErr)
+    setConfirmError(cErr)
 
-    if (eErr || pErr) return
+    if (eErr || pErr || cErr) return
 
     setLoading(true)
 
     try {
       addToast({ type: 'success', title: 'Compte créé !', message: 'Bienvenue sur VFS' })
-      window.location.href = '/studio'
+      router.push('/studio')
     } catch {
       addToast({ type: 'error', title: 'Erreur', message: 'Inscription impossible' })
     } finally {
@@ -108,6 +119,15 @@ export default function SignupPage() {
             placeholder="8 caractères minimum"
             error={passwordError}
             helperText="Minimum 8 caractères pour sécuriser votre compte"
+            required
+          />
+          <Input
+            label="Confirmer le mot de passe"
+            type="password"
+            value={confirmPassword}
+            onChange={handleConfirmChange}
+            placeholder="Ressaisissez votre mot de passe"
+            error={confirmError}
             required
           />
           <Button type="submit" loading={loading} className="w-full" iconRight={<ArrowRight className="h-4 w-4" />}>
