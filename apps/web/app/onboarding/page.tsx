@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Button } from '@/components/ui/button'
 import { UploadZone } from '@/components/ui/upload-zone'
-import { ArrowRight, Camera } from 'lucide-react'
+import { ArrowRight, ArrowLeft, Camera } from 'lucide-react'
 import { useUpload } from '@/hooks/use-upload'
 import { useToastStore } from '@/stores/toast-store'
 
@@ -57,10 +57,10 @@ export default function OnboardingPage() {
                 Uploadez 3 photos pour obtenir les meilleurs résultats
               </p>
               <div className="mt-6 grid grid-cols-3 gap-3">
-                {['Face', '3/4', 'Corps entier'].map((label) => (
+                {['Visage', 'Profil', 'Corps entier'].map((label) => (
                   <div
                     key={label}
-                    className="aspect-[3/4] rounded-lg border border-dashed border-border-default bg-bg-surface p-2 flex items-center justify-center cursor-pointer hover:border-accent-primary"
+                    className="aspect-[3/4] rounded-lg border border-dashed border-border-default bg-bg-surface p-2 flex items-center justify-center hover:border-accent-primary transition-colors"
                   >
                     <span className="text-xs text-text-tertiary">{label}</span>
                   </div>
@@ -97,21 +97,30 @@ export default function OnboardingPage() {
                   (item) => (
                     <div
                       key={item}
-                      className="aspect-square rounded-lg border border-border-default bg-bg-surface flex items-center justify-center cursor-pointer hover:border-accent-primary p-4"
+                      className="aspect-square rounded-lg border border-border-default bg-bg-surface flex items-center justify-center hover:border-accent-primary p-4 transition-colors"
                     >
                       <span className="text-sm text-text-secondary">{item}</span>
                     </div>
                   ),
                 )}
               </div>
-              <Button
-                className="mt-8"
-                size="lg"
-                iconRight={<ArrowRight className="h-4 w-4" />}
-                onClick={() => setStep(3)}
-              >
-                Essayer ce vêtement
-              </Button>
+              <div className="mt-8 flex gap-3 justify-center">
+                <Button
+                  variant="ghost"
+                  size="md"
+                  iconLeft={<ArrowLeft className="h-4 w-4" />}
+                  onClick={() => setStep(1)}
+                >
+                  Retour
+                </Button>
+                <Button
+                  size="lg"
+                  iconRight={<ArrowRight className="h-4 w-4" />}
+                  onClick={() => setStep(3)}
+                >
+                  Essayer ce vêtement
+                </Button>
+              </div>
             </motion.div>
           )}
 
@@ -136,9 +145,16 @@ export default function OnboardingPage() {
               <div className="mt-8 aspect-[3/4] rounded-lg bg-bg-surface border border-border-default flex items-center justify-center">
                 <span className="text-sm text-text-tertiary">Votre résultat apparaîtra ici</span>
               </div>
-              <p className="mt-6 text-sm text-accent-primary">
-                Effet &quot;wow&quot; garanti — créez votre compte pour télécharger
-              </p>
+              <div className="mt-6">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  iconLeft={<ArrowLeft className="h-4 w-4" />}
+                  onClick={() => setStep(2)}
+                >
+                  Retour
+                </Button>
+              </div>
             </motion.div>
           )}
         </AnimatePresence>

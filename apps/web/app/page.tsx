@@ -183,7 +183,7 @@ function SocialProof() {
 const features = [
   {
     icon: Camera,
-    title: 'Try-On Photo',
+    title: 'Essayage Photo',
     desc: 'Visualisez n\'importe quel vêtement sur votre propre photo en quelques secondes. Résultat photoréaliste, pas de filtre.',
   },
   {
@@ -193,12 +193,12 @@ const features = [
   },
   {
     icon: Sparkles,
-    title: 'AI Stylist',
+    title: 'Styliste IA',
     desc: 'Des conseils personnalisés basés sur votre morphologie, votre teint et votre style. Comme un styliste personnel, en instantané.',
   },
   {
     icon: BarChart3,
-    title: 'Dashboard Marque',
+    title: 'Tableau de bord Marque',
     desc: 'Analysez vos performances, réduisez les retours de 30%, et suivez l\'engagement de chaque SKU en temps réel.',
   },
 ]
@@ -265,7 +265,7 @@ const plans = [
     name: 'Free',
     price: '0€',
     credits: '10 crédits/mois',
-    features: ['Try-On Image', 'Galerie 7 jours', 'Qualité standard'],
+    features: ['Essayage Photo', 'Galerie 7 jours', 'Qualité standard'],
     cta: 'Commencer',
     href: '/signup',
   },
@@ -273,7 +273,7 @@ const plans = [
     name: 'Pro',
     price: '19€',
     credits: '100 crédits/mois',
-    features: ['Try-On Image + Vidéo', 'Export HD', 'Collections illimitées', 'AI Stylist'],
+    features: ['Essayage Photo + Vidéo', 'Export HD', 'Collections illimitées', 'Styliste IA'],
     cta: 'Essayer Pro',
     href: '/signup?plan=pro',
     highlight: true,

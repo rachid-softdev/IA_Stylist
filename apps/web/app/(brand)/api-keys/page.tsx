@@ -36,7 +36,7 @@ export default function ApiKeysPage() {
       animate="visible"
     >
       <motion.div variants={item} className="mb-8">
-        <h1 className="font-display text-3xl tracking-tight text-text-primary">API Keys</h1>
+        <h1 className="font-display text-3xl tracking-tight text-text-primary">Clés API</h1>
         <p className="mt-1 text-text-secondary">Gérez vos clés d&apos;intégration</p>
       </motion.div>
 

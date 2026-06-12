@@ -110,7 +110,7 @@ export default function WidgetConfigPage() {
         <Card className="lg:col-span-2">
           <div className="mb-4 flex items-center gap-3">
             <ShoppingBag className="h-5 w-5 text-accent-primary" />
-            <h3 className="font-heading text-sm text-text-primary">Template Shopify Liquid</h3>
+            <h3 className="font-heading text-sm text-text-primary">Code Shopify Liquid</h3>
           </div>
           <p className="mb-3 text-xs text-text-secondary">
             Pour une intégration complète avec toutes les variantes, utilisez ce template
@@ -123,7 +123,7 @@ export default function WidgetConfigPage() {
               variant="ghost"
               size="sm"
               className="absolute right-2 top-2"
-              onClick={() => copyToClipboard(shopifySnippet, 'Template copié')}
+              onClick={() => copyToClipboard(shopifySnippet, 'Code copié')}
             >
               <Copy className="h-3.5 w-3.5" />
             </Button>

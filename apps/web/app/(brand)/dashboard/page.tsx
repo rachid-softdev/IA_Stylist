@@ -68,7 +68,7 @@ export default function BrandDashboardPage() {
       <motion.div variants={item} className="mb-8 flex items-start justify-between gap-4">
         <div>
           <h1 className="font-display text-3xl tracking-tight text-text-primary">
-            Brand Dashboard
+            Tableau de bord
           </h1>
           <p className="mt-1 text-sm text-text-secondary">
             Vue d&apos;ensemble de votre marque

@@ -57,7 +57,7 @@ export default function StylistPage() {
       animate="visible"
     >
       <motion.div variants={item} className="mb-8">
-        <h1 className="font-display text-3xl tracking-tight text-text-primary">AI Stylist</h1>
+        <h1 className="font-display text-3xl tracking-tight text-text-primary">Styliste IA</h1>
         <p className="mt-1 text-text-secondary">Conseils personnalisés basés sur votre morphologie</p>
       </motion.div>
 
@@ -70,7 +70,7 @@ export default function StylistPage() {
               <h2 className="font-heading text-lg text-text-primary">Votre profil</h2>
               {profile?.status === 'no_profile' ? (
                 <p className="mt-1 text-sm text-text-secondary">
-                  Uploadez 3 photos pour activer AI Stylist
+                  Uploadez 3 photos pour activer le Styliste IA
                 </p>
               ) : (
                 <div className="mt-2 flex flex-wrap gap-2">

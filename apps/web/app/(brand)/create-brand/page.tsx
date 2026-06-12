@@ -8,7 +8,7 @@ import { Card } from '@/components/ui/card'
 import { useToastStore } from '@/stores/toast-store'
 import { api } from '@/lib/api'
 import { useRouter } from 'next/navigation'
-import { ArrowRight, Building2, ShoppingBag, Check } from 'lucide-react'
+import { ArrowRight, ArrowLeft, Building2, ShoppingBag, Check } from 'lucide-react'
 
 const stepVariants = {
   enter: { opacity: 0, y: 20 },
@@ -125,14 +125,24 @@ export default function BrandOnboardingPage() {
                       onChange={(e) => setShopifyUrl(e.target.value)}
                     />
                   </div>
-                  <Button
-                    className="w-full"
-                    size="lg"
-                    iconRight={<ArrowRight className="h-4 w-4" />}
-                    onClick={() => setStep(3)}
-                  >
-                    Continuer
-                  </Button>
+                  <div className="flex gap-3">
+                    <Button
+                      variant="ghost"
+                      size="md"
+                      iconLeft={<ArrowLeft className="h-4 w-4" />}
+                      onClick={() => setStep(1)}
+                    >
+                      Retour
+                    </Button>
+                    <Button
+                      className="flex-1"
+                      size="lg"
+                      iconRight={<ArrowRight className="h-4 w-4" />}
+                      onClick={() => setStep(3)}
+                    >
+                      Continuer
+                    </Button>
+                  </div>
                 </div>
               </Card>
             </motion.div>
@@ -170,14 +180,25 @@ export default function BrandOnboardingPage() {
                     <span className="text-text-primary font-medium">Starter — 500 crédits</span>
                   </div>
                 </div>
-                <Button
-                  className="mt-6 w-full"
-                  size="lg"
-                  loading={loading}
-                  onClick={handleCreate}
-                >
-                  Créer ma marque
-                </Button>
+                <div className="mt-6 flex gap-3">
+                  <Button
+                    variant="ghost"
+                    size="md"
+                    iconLeft={<ArrowLeft className="h-4 w-4" />}
+                    onClick={() => setStep(2)}
+                    disabled={loading}
+                  >
+                    Retour
+                  </Button>
+                  <Button
+                    className="flex-1"
+                    size="lg"
+                    loading={loading}
+                    onClick={handleCreate}
+                  >
+                    Créer ma marque
+                  </Button>
+                </div>
               </Card>
             </motion.div>
           )}

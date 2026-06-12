@@ -228,7 +228,7 @@ export default function StudioPage() {
             <div className="flex flex-col items-center gap-2">
               <GenerateButton
                 onClick={handleGenerate}
-                disabled={!isReady}
+                disabled={!isReady || isGenerating}
                 credits={1}
               />
               {isReady && (

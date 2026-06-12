@@ -164,18 +164,23 @@ export default function AnalyticsPage() {
           {isLoading ? (
             <Skeleton className="h-48 w-full" />
           ) : (
-            <div className="flex h-48 items-end gap-1">
-              {(data?.time_series || []).map((point) => (
-                <div
-                  key={point.date}
-                  className="flex-1 rounded-t bg-accent-primary/30 hover:bg-accent-primary/50 transition-colors relative group"
-                  style={{ height: `${(point.count / maxCount) * 100}%` }}
-                >
-                  <div className="absolute -top-6 left-1/2 -translate-x-1/2 hidden group-hover:block text-2xs text-text-secondary whitespace-nowrap">
-                    {point.count}
+                <div className="flex h-48 items-end gap-1" role="img" aria-label="Graphique des try-ons par jour">
+              {(data?.time_series || []).map((point) => {
+                const formattedDate = new Date(point.date).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' })
+                return (
+                  <div
+                    key={point.date}
+                    className="flex-1 rounded-t bg-accent-primary/30 hover:bg-accent-primary/50 transition-colors relative group"
+                    style={{ height: `${(point.count / maxCount) * 100}%` }}
+                    role="graphics-symbol"
+                    aria-label={`${formattedDate}: ${point.count} try-ons`}
+                  >
+                    <div className="absolute -top-8 left-1/2 -translate-x-1/2 hidden group-hover:block text-2xs text-text-secondary whitespace-nowrap bg-bg-surface px-1.5 py-0.5 rounded">
+                      {formattedDate} — {point.count}
+                    </div>
                   </div>
-                </div>
-              ))}
+                )
+              })}
               {(!data?.time_series || data.time_series.length === 0) && (
                 <div className="flex h-full w-full items-center justify-center text-sm text-text-tertiary">
                   Aucune donnée

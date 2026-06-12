@@ -58,7 +58,7 @@ export default function HistoryPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-text-primary">
-                    {job.job_type === 'image' ? 'Try-On Image' : job.job_type === 'video' ? 'Vidéo' : 'Lookbook'}
+                    {job.job_type === 'image' ? 'Essayage Photo' : job.job_type === 'video' ? 'Vidéo' : 'Lookbook'}
                   </p>
                   <p className="text-xs text-text-tertiary">
                     {new Date(job.created_at).toLocaleDateString('fr-FR', {
