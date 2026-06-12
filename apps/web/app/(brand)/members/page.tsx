@@ -27,6 +27,7 @@ export default function MembersPage() {
   const [showInvite, setShowInvite] = useState(false)
   const [email, setEmail] = useState('')
   const [role, setRole] = useState<'admin' | 'member'>('member')
+  const [confirmRemoveUserId, setConfirmRemoveUserId] = useState<string | null>(null)
   const { addToast } = useToastStore()
   const queryClient = useQueryClient()
 
@@ -65,6 +66,7 @@ export default function MembersPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['brand-members'] })
       addToast({ type: 'success', title: 'Membre retiré' })
+      setConfirmRemoveUserId(null)
     },
     onError: (err: Error) => {
       addToast({ type: 'error', title: 'Suppression échouée', message: err.message })
@@ -114,7 +116,9 @@ export default function MembersPage() {
                     <Button
                       variant="ghost"
                       size="sm"
-                      onClick={() => removeMutation.mutate(member.user_id)}
+                      loading={removeMutation.isPending && confirmRemoveUserId === member.user_id}
+                      disabled={removeMutation.isPending}
+                      onClick={() => setConfirmRemoveUserId(member.user_id)}
                       className="text-status-error"
                     >
                       <Trash2 className="h-4 w-4" />
@@ -134,6 +138,26 @@ export default function MembersPage() {
           )}
         </Card>
       </motion.div>
+
+      {/* Confirm remove dialog */}
+      <Dialog open={confirmRemoveUserId !== null} onClose={() => setConfirmRemoveUserId(null)} title="Retirer ce membre ?">
+        <p className="text-sm text-text-secondary">
+          Ce membre perdra l&apos;accès à la marque et à ses données. Cette action est irréversible.
+        </p>
+        <div className="mt-6 flex gap-3 justify-end">
+          <Button variant="secondary" size="sm" onClick={() => setConfirmRemoveUserId(null)}>
+            Annuler
+          </Button>
+          <Button
+            variant="destructive"
+            size="sm"
+            loading={removeMutation.isPending}
+            onClick={() => confirmRemoveUserId && removeMutation.mutate(confirmRemoveUserId)}
+          >
+            Retirer
+          </Button>
+        </div>
+      </Dialog>
 
       <Dialog open={showInvite} onClose={() => setShowInvite(false)} title="Inviter un membre">
         <div className="space-y-4">

@@ -7,6 +7,7 @@ import { api } from '@/lib/api'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card } from '@/components/ui/card'
+import { Skeleton } from '@/components/ui/skeleton'
 import { Dialog } from '@/components/ui/dialog'
 import { Badge } from '@/components/ui/badge'
 import { useToastStore } from '@/stores/toast-store'
@@ -80,7 +81,16 @@ export default function CatalogPage() {
       <motion.div variants={item}>
         <Card>
           {isLoading ? (
-            <div className="py-12 text-center text-sm text-text-secondary">Chargement...</div>
+            <div className="divide-y divide-border-subtle">
+              {Array.from({ length: 5 }).map((_, i) => (
+                <div key={i} className="flex items-center gap-4 px-4 py-3">
+                  <Skeleton className="h-4 w-20" />
+                  <Skeleton className="h-4 flex-1" />
+                  <Skeleton className="h-4 w-16" />
+                  <Skeleton className="h-5 w-14 rounded-full" />
+                </div>
+              ))}
+            </div>
           ) : garments.length > 0 ? (
             <div>
               <div className="grid grid-cols-12 gap-4 border-b border-border-subtle px-4 py-3 text-xs text-text-tertiary uppercase tracking-widest">
@@ -163,14 +173,15 @@ function AddGarmentForm({ onDone }: { onDone: () => void }) {
         <Input placeholder="T-shirt blanc" value={name} onChange={(e) => setName(e.target.value)} />
       </div>
       <div>
-        <label className="mb-1 block text-xs text-text-secondary">Catégorie *</label>
+        <label id="category-label" className="mb-1 block text-xs text-text-secondary">Catégorie *</label>
         <select
+          aria-labelledby="category-label"
           value={category}
           onChange={(e) => setCategory(e.target.value)}
           className="w-full rounded-md border border-border-default bg-bg-surface px-3 py-2 text-sm text-text-primary"
         >
-          <option value="top">Top</option>
-          <option value="bottom">Bottom</option>
+          <option value="top">Haut</option>
+          <option value="bottom">Bas</option>
           <option value="dress">Robe</option>
           <option value="outerwear">Veste</option>
           <option value="shoes">Chaussures</option>

@@ -1,9 +1,11 @@
 'use client'
 
+import { useState } from 'react'
 import { motion } from 'framer-motion'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { Dialog } from '@/components/ui/dialog'
 import { Avatar } from '@/components/ui/avatar'
 import { ThemeToggle } from '@/components/ui/theme-toggle'
 import { useAuthStore } from '@/stores/auth-store'
@@ -21,6 +23,7 @@ const item = {
 }
 
 export default function SettingsPage() {
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
   const { user, logout } = useAuthStore()
   const { addToast } = useToastStore()
 
@@ -83,7 +86,7 @@ export default function SettingsPage() {
               variant="destructive"
               size="sm"
               iconLeft={<Trash2 className="h-3.5 w-3.5" />}
-              onClick={() => addToast({ type: 'info', title: 'RGPD', message: 'Suppression de compte à venir' })}
+              onClick={() => setShowDeleteConfirm(true)}
             >
               Supprimer mon compte
             </Button>
@@ -100,6 +103,28 @@ export default function SettingsPage() {
           Déconnexion
         </Button>
       </motion.div>
+
+      {/* Confirm delete account dialog */}
+      <Dialog open={showDeleteConfirm} onClose={() => setShowDeleteConfirm(false)} title="Supprimer votre compte ?">
+        <p className="text-sm text-text-secondary">
+          Cette action est irréversible. Toutes vos données (looks, historique, abonnement) seront définitivement supprimées.
+        </p>
+        <div className="mt-6 flex gap-3 justify-end">
+          <Button variant="secondary" size="sm" onClick={() => setShowDeleteConfirm(false)}>
+            Conserver mon compte
+          </Button>
+          <Button
+            variant="destructive"
+            size="sm"
+            onClick={() => {
+              setShowDeleteConfirm(false)
+              addToast({ type: 'info', title: 'Fonctionnalité à venir', message: 'La suppression de compte sera disponible prochainement. Contactez le support pour toute demande.' })
+            }}
+          >
+            Supprimer définitivement
+          </Button>
+        </div>
+      </Dialog>
     </motion.div>
   )
 }

@@ -108,6 +108,15 @@ export default function LoginPage() {
             error={passwordError}
             required
           />
+          <div className="text-right -mt-2">
+            <button
+              type="button"
+              onClick={() => addToast({ type: 'info', title: 'Mot de passe oublié', message: 'La réinitialisation sera disponible prochainement' })}
+              className="text-xs text-accent-primary hover:underline"
+            >
+              Mot de passe oublié ?
+            </button>
+          </div>
           <Button type="submit" loading={loading} className="w-full" iconRight={<ArrowRight className="h-4 w-4" />}>
             Se connecter
           </Button>

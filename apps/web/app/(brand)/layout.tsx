@@ -1,5 +1,6 @@
 'use client'
 
+import { MotionConfig } from 'framer-motion'
 import { BrandSidebar } from '@/components/shared/brand-sidebar'
 import { useRouter } from 'next/navigation'
 import { useAuthStore } from '@/stores/auth-store'
@@ -24,13 +25,15 @@ export default function BrandLayout({ children }: { children: React.ReactNode })
   }
 
   return (
-    <div className="min-h-screen bg-bg-base">
-      <BrandSidebar />
-      <div className="lg:pl-60">
-        <div className="mx-auto max-w-grid px-4 py-8 md:px-8">
-          {children}
+    <MotionConfig reducedMotion="user">
+      <div className="min-h-screen bg-bg-base">
+        <BrandSidebar />
+        <div className="lg:pl-60">
+          <div className="mx-auto max-w-grid px-4 py-8 md:px-8">
+            {children}
+          </div>
         </div>
       </div>
-    </div>
+    </MotionConfig>
   )
 }

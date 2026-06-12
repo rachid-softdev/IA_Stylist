@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useCallback } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { motion } from 'framer-motion'
 import { api } from '@/lib/api'
@@ -9,6 +9,7 @@ import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { Dialog } from '@/components/ui/dialog'
 import { Download, Trash2, Search, Filter, Camera } from 'lucide-react'
 import { useToastStore } from '@/stores/toast-store'
 import type { GenerationJob } from '@vfs/shared-types'
@@ -25,6 +26,8 @@ const item = {
 
 export default function DressingPage() {
   const [filter, setFilter] = useState('')
+  const [deletingId, setDeletingId] = useState<string | null>(null)
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null)
   const { addToast } = useToastStore()
 
   const { data, isLoading } = useQuery({
@@ -37,14 +40,18 @@ export default function DressingPage() {
 
   const jobs = data?.data || []
 
-  const handleDelete = async (jobId: string) => {
+  const handleDelete = useCallback(async (jobId: string) => {
+    setDeletingId(jobId)
+    setConfirmDeleteId(null)
     try {
       await api.delete(`/dressing/${jobId}`)
       addToast({ type: 'success', title: 'Supprimé' })
     } catch {
       addToast({ type: 'error', title: 'Erreur', message: 'Impossible de supprimer' })
+    } finally {
+      setDeletingId(null)
     }
-  }
+  }, [addToast])
 
   const handleDownload = (url: string, jobId: string) => {
     const a = document.createElement('a')
@@ -105,20 +112,21 @@ export default function DressingPage() {
       ) : (
         <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4">
           {jobs
-            .filter((j) =>
-              !filter || j.id?.toLowerCase().includes(filter.toLowerCase())
-            )
+              .filter((j) =>
+                !filter || j.id?.toLowerCase().includes(filter.toLowerCase()) || (j as any).garment_name?.toLowerCase().includes(filter.toLowerCase())
+              )
             .map((job) => (
               <div
                 key={job.id}
-                className="group relative overflow-hidden rounded-lg border border-border-default bg-bg-surface transition-all duration-200 hover:border-border-strong hover:shadow-md animate-card-in"
+                className="group relative overflow-hidden rounded-lg border border-border-default bg-bg-surface transition-colors duration-200 hover:border-border-strong hover:shadow-md animate-card-in"
               >
                 {job.result_url ? (
                   <img
                     src={job.result_url}
-                    alt="Try-on"
+                    alt={(job as any).garment_name ? `Look ${(job as any).garment_name}` : 'Look généré'}
                     className="aspect-square w-full object-cover"
                     loading="lazy"
+                    onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }}
                   />
                 ) : (
                   <div className="aspect-square w-full bg-bg-elevated" />
@@ -142,9 +150,11 @@ export default function DressingPage() {
                       variant="ghost"
                       size="sm"
                       iconLeft={<Trash2 className="h-3.5 w-3.5" />}
+                      loading={deletingId === job.id}
+                      disabled={deletingId !== null}
                       onClick={(e) => {
                         e.preventDefault()
-                        handleDelete(job.id)
+                        setConfirmDeleteId(job.id)
                       }}
                     >
                       Supprimer
@@ -162,6 +172,26 @@ export default function DressingPage() {
         </div>
       )}
       </motion.div>
+
+      {/* Confirm delete dialog */}
+      <Dialog open={confirmDeleteId !== null} onClose={() => setConfirmDeleteId(null)} title="Supprimer ce look ?">
+        <p className="text-sm text-text-secondary">
+          Cette action est irréversible. Le look sera définitivement supprimé de votre dressing.
+        </p>
+        <div className="mt-6 flex gap-3 justify-end">
+          <Button variant="secondary" size="sm" onClick={() => setConfirmDeleteId(null)}>
+            Annuler
+          </Button>
+          <Button
+            variant="destructive"
+            size="sm"
+            loading={deletingId === confirmDeleteId}
+            onClick={() => confirmDeleteId && handleDelete(confirmDeleteId)}
+          >
+            Supprimer
+          </Button>
+        </div>
+      </Dialog>
     </motion.div>
   )
 }

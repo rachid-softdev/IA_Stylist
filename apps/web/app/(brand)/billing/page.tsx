@@ -40,7 +40,7 @@ export default function BillingPage() {
             <Button
               variant="secondary"
               size="sm"
-              onClick={() => addToast({ type: 'info', title: 'Stripe', message: 'Page de checkout à implémenter' })}
+              onClick={() => addToast({ type: 'info', title: 'Changement de plan', message: 'Cette fonctionnalité sera bientôt disponible. Contactez le support pour modifier votre abonnement.' })}
             >
               Changer de plan
             </Button>

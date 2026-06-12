@@ -24,7 +24,7 @@ const navItems = [
   { href: '/analytics', label: 'Analytiques', icon: BarChart3 },
   { href: '/members', label: 'Membres', icon: Users },
   { href: '/widget', label: 'Widget Shopify', icon: ShoppingBag },
-  { href: '/api-keys', label: 'API Keys', icon: Key },
+  { href: '/api-keys', label: 'Clés API', icon: Key },
   { href: '/billing', label: 'Facturation', icon: CreditCard },
   { href: '/settings', label: 'Paramètres', icon: Settings },
 ]
