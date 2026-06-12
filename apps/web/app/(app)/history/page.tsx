@@ -1,10 +1,22 @@
 'use client'
 
 import { useQuery } from '@tanstack/react-query'
+import { motion } from 'framer-motion'
 import { api } from '@/lib/api'
 import { Card } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
+import { Badge } from '@/components/ui/badge'
 import type { GenerationJob } from '@vfs/shared-types'
+
+const container = {
+  hidden: { opacity: 0 },
+  visible: { opacity: 1, transition: { staggerChildren: 0.05 } },
+}
+
+const item = {
+  hidden: { opacity: 0, y: 12 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.35, ease: [0.16, 1, 0.3, 1] } },
+}
 
 export default function HistoryPage() {
   const { data, isLoading } = useQuery({
@@ -18,11 +30,16 @@ export default function HistoryPage() {
   const jobs = data?.data || []
 
   return (
-    <div className="animate-fade-in">
-      <div className="mb-8">
+    <motion.div
+      className="animate-fade-in"
+      variants={container}
+      initial="hidden"
+      animate="visible"
+    >
+      <motion.div variants={item} className="mb-8">
         <h1 className="font-display text-3xl tracking-tight text-text-primary">Historique</h1>
         <p className="mt-1 text-text-secondary">Toutes vos générations</p>
-      </div>
+      </motion.div>
 
       {isLoading ? (
         <div className="space-y-3">
@@ -31,11 +48,11 @@ export default function HistoryPage() {
           ))}
         </div>
       ) : jobs.length === 0 ? (
-        <div className="py-20 text-center">
+        <motion.div variants={item} className="py-20 text-center">
           <p className="text-text-secondary">Aucune génération pour le moment</p>
-        </div>
+        </motion.div>
       ) : (
-        <div className="space-y-3">
+        <motion.div variants={item} className="space-y-3">
           {jobs.map((job) => (
             <Card key={job.id} hover>
               <div className="flex items-center justify-between">
@@ -56,23 +73,15 @@ export default function HistoryPage() {
                   <span className="text-xs text-text-secondary">
                     {job.credits_used} crédit{job.credits_used > 1 ? 's' : ''}
                   </span>
-                  <span
-                    className={`inline-flex items-center rounded-full border px-2 py-0.5 text-xs font-medium ${
-                      job.status === 'done'
-                        ? 'border-gen-done/30 bg-gen-done/10 text-gen-done'
-                        : job.status === 'error'
-                          ? 'border-gen-error/30 bg-gen-error/10 text-gen-error'
-                          : 'border-text-tertiary/30 bg-text-tertiary/10 text-text-tertiary'
-                    }`}
-                  >
+                  <Badge status={job.status}>
                     {job.status === 'done' ? 'Terminé' : job.status === 'error' ? 'Erreur' : job.status}
-                  </span>
+                  </Badge>
                 </div>
               </div>
             </Card>
           ))}
-        </div>
+        </motion.div>
       )}
-    </div>
+    </motion.div>
   )
 }

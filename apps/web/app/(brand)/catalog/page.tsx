@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
+import { motion } from 'framer-motion'
 import { api } from '@/lib/api'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -11,6 +12,16 @@ import { Badge } from '@/components/ui/badge'
 import { useToastStore } from '@/stores/toast-store'
 import { Plus, Upload as UploadIcon, Search, Package } from 'lucide-react'
 import type { Garment } from '@vfs/shared-types'
+
+const container = {
+  hidden: { opacity: 0 },
+  visible: { opacity: 1, transition: { staggerChildren: 0.05 } },
+}
+
+const item = {
+  hidden: { opacity: 0, y: 16 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.4, ease: [0.16, 1, 0.3, 1] } },
+}
 
 export default function CatalogPage() {
   const [search, setSearch] = useState('')
@@ -33,8 +44,13 @@ export default function CatalogPage() {
   const totalPages = data?.meta?.total_pages || 1
 
   return (
-    <div className="animate-fade-in">
-      <div className="mb-8 flex items-center justify-between">
+    <motion.div
+      className="animate-fade-in"
+      variants={container}
+      initial="hidden"
+      animate="visible"
+    >
+      <motion.div variants={item} className="mb-8 flex items-center justify-between">
         <div>
           <h1 className="font-display text-3xl tracking-tight text-text-primary">Catalogue</h1>
           <p className="mt-1 text-text-secondary">Gérez vos vêtements</p>
@@ -47,9 +63,9 @@ export default function CatalogPage() {
             Ajouter
           </Button>
         </div>
-      </div>
+      </motion.div>
 
-      <div className="mb-6">
+      <motion.div variants={item} className="mb-6">
         <div className="relative max-w-sm">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-text-tertiary" />
           <Input
@@ -59,61 +75,63 @@ export default function CatalogPage() {
             className="pl-9"
           />
         </div>
-      </div>
+      </motion.div>
 
-      <Card>
-        {isLoading ? (
-          <div className="py-12 text-center text-sm text-text-secondary">Chargement...</div>
-        ) : garments.length > 0 ? (
-          <div>
-            <div className="grid grid-cols-12 gap-4 border-b border-border-subtle px-4 py-3 text-xs text-text-tertiary uppercase tracking-widest">
-              <span className="col-span-3">SKU</span>
-              <span className="col-span-4">Nom</span>
-              <span className="col-span-2">Catégorie</span>
-              <span className="col-span-2">Statut</span>
-              <span className="col-span-1" />
-            </div>
-            {garments.map((g: Garment) => (
-              <div key={g.id} className="grid grid-cols-12 gap-4 border-b border-border-subtle px-4 py-3 text-sm last:border-0">
-                <span className="col-span-3 font-mono text-xs text-text-secondary">{g.sku}</span>
-                <span className="col-span-4 text-text-primary">{g.name}</span>
-                <span className="col-span-2 text-text-secondary">{g.category}</span>
-                <span className="col-span-2">
-                  <Badge status={g.status === 'active' ? 'active' : 'default'}>
-                    {g.status === 'active' ? 'Actif' : g.status === 'validating' ? 'Validation' : 'Échec'}
-                  </Badge>
-                </span>
+      <motion.div variants={item}>
+        <Card>
+          {isLoading ? (
+            <div className="py-12 text-center text-sm text-text-secondary">Chargement...</div>
+          ) : garments.length > 0 ? (
+            <div>
+              <div className="grid grid-cols-12 gap-4 border-b border-border-subtle px-4 py-3 text-xs text-text-tertiary uppercase tracking-widest">
+                <span className="col-span-3">SKU</span>
+                <span className="col-span-4">Nom</span>
+                <span className="col-span-2">Catégorie</span>
+                <span className="col-span-2">Statut</span>
+                <span className="col-span-1" />
               </div>
-            ))}
-            {totalPages > 1 && (
-              <div className="flex items-center justify-between px-4 py-3 text-xs text-text-secondary">
-                <span>Page {page} / {totalPages}</span>
-                <div className="flex gap-2">
-                  <Button variant="ghost" size="sm" disabled={page <= 1} onClick={() => setPage(p => p - 1)}>
-                    Précédent
-                  </Button>
-                  <Button variant="ghost" size="sm" disabled={page >= totalPages} onClick={() => setPage(p => p + 1)}>
-                    Suivant
-                  </Button>
+              {garments.map((g: Garment) => (
+                <div key={g.id} className="grid grid-cols-12 gap-4 border-b border-border-subtle px-4 py-3 text-sm last:border-0">
+                  <span className="col-span-3 font-mono text-xs text-text-secondary">{g.sku}</span>
+                  <span className="col-span-4 text-text-primary">{g.name}</span>
+                  <span className="col-span-2 text-text-secondary">{g.category}</span>
+                  <span className="col-span-2">
+                    <Badge status={g.status === 'active' ? 'active' : 'default'}>
+                      {g.status === 'active' ? 'Actif' : g.status === 'validating' ? 'Validation' : 'Échec'}
+                    </Badge>
+                  </span>
                 </div>
-              </div>
-            )}
-          </div>
-        ) : (
-          <div className="py-20 text-center">
-            <Package className="mx-auto h-8 w-8 text-text-tertiary" />
-            <p className="mt-3 text-sm text-text-secondary">Aucun produit</p>
-            <Button size="sm" className="mt-4" onClick={() => setShowAdd(true)}>
-              Ajouter un produit
-            </Button>
-          </div>
-        )}
-      </Card>
+              ))}
+              {totalPages > 1 && (
+                <div className="flex items-center justify-between px-4 py-3 text-xs text-text-secondary">
+                  <span>Page {page} / {totalPages}</span>
+                  <div className="flex gap-2">
+                    <Button variant="ghost" size="sm" disabled={page <= 1} onClick={() => setPage(p => p - 1)}>
+                      Précédent
+                    </Button>
+                    <Button variant="ghost" size="sm" disabled={page >= totalPages} onClick={() => setPage(p => p + 1)}>
+                      Suivant
+                    </Button>
+                  </div>
+                </div>
+              )}
+            </div>
+          ) : (
+            <div className="py-20 text-center">
+              <Package className="mx-auto h-8 w-8 text-text-tertiary" />
+              <p className="mt-3 text-sm text-text-secondary">Aucun produit</p>
+              <Button size="sm" className="mt-4" onClick={() => setShowAdd(true)}>
+                Ajouter un produit
+              </Button>
+            </div>
+          )}
+        </Card>
+      </motion.div>
 
       <Dialog open={showAdd} onClose={() => setShowAdd(false)} title="Ajouter un vêtement">
         <AddGarmentForm onDone={() => { setShowAdd(false); addToast({ type: 'success', title: 'Vêtement ajouté' }) }} />
       </Dialog>
-    </div>
+    </motion.div>
   )
 }
 

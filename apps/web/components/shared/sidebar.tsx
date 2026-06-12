@@ -15,6 +15,7 @@ import {
   X,
 } from 'lucide-react'
 import { useAuthStore } from '@/stores/auth-store'
+import { motion, AnimatePresence } from 'framer-motion'
 import { useState } from 'react'
 
 const navItems = [
@@ -91,7 +92,17 @@ export function Sidebar() {
           {/* Credits */}
           <div className="mb-2 flex items-center gap-2 rounded-md px-3 py-2 text-sm text-text-secondary">
             <Coins className="h-4 w-4 text-accent-primary" />
-            <span>{user?.credits ?? 0} crédits</span>
+            <AnimatePresence mode="wait">
+              <motion.span
+                key={user?.credits ?? 0}
+                initial={{ opacity: 0, y: 4 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -4 }}
+                transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
+              >
+                {user?.credits ?? 0} crédits
+              </motion.span>
+            </AnimatePresence>
           </div>
 
           {/* Profile / Settings */}

@@ -2,15 +2,26 @@
 
 import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
+import { motion } from 'framer-motion'
 import { api } from '@/lib/api'
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Download, Trash2, Search, Filter } from 'lucide-react'
+import { Download, Trash2, Search, Filter, Camera } from 'lucide-react'
 import { useToastStore } from '@/stores/toast-store'
 import type { GenerationJob } from '@vfs/shared-types'
+
+const container = {
+  hidden: { opacity: 0 },
+  visible: { opacity: 1, transition: { staggerChildren: 0.05 } },
+}
+
+const item = {
+  hidden: { opacity: 0, y: 16 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.4, ease: [0.16, 1, 0.3, 1] } },
+}
 
 export default function DressingPage() {
   const [filter, setFilter] = useState('')
@@ -43,14 +54,19 @@ export default function DressingPage() {
   }
 
   return (
-    <div className="animate-fade-in">
-      <div className="mb-8">
+    <motion.div
+      className="animate-fade-in"
+      variants={container}
+      initial="hidden"
+      animate="visible"
+    >
+      <motion.div variants={item} className="mb-8">
         <h1 className="font-display text-3xl tracking-tight text-text-primary">Dressing</h1>
         <p className="mt-1 text-text-secondary">Votre galerie de looks générés</p>
-      </div>
+      </motion.div>
 
       {/* Filters */}
-      <div className="mb-6 flex gap-2">
+      <motion.div variants={item} className="mb-6 flex gap-2">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-text-tertiary" />
           <Input
@@ -63,9 +79,10 @@ export default function DressingPage() {
         <Button variant="secondary" size="md" iconLeft={<Filter className="h-4 w-4" />}>
           Filtres
         </Button>
-      </div>
+      </motion.div>
 
       {/* Grid */}
+      <motion.div variants={item}>
       {isLoading ? (
         <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4">
           {Array.from({ length: 8 }).map((_, i) => (
@@ -73,8 +90,10 @@ export default function DressingPage() {
           ))}
         </div>
       ) : jobs.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-20 text-center">
-          <div className="mb-4 text-5xl">👔</div>
+          <div className="flex flex-col items-center justify-center py-20 text-center">
+          <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-accent-primary/10">
+            <Camera className="h-6 w-6 text-accent-primary" />
+          </div>
           <h2 className="text-xl font-heading text-text-primary">Créez votre premier look</h2>
           <p className="mt-2 text-text-secondary">
             Rendez-vous dans le Studio pour essayer un vêtement
@@ -142,6 +161,7 @@ export default function DressingPage() {
             ))}
         </div>
       )}
-    </div>
+      </motion.div>
+    </motion.div>
   )
 }

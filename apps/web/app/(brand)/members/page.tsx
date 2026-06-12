@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { motion } from 'framer-motion'
 import { api } from '@/lib/api'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -11,6 +12,16 @@ import { Badge } from '@/components/ui/badge'
 import { useToastStore } from '@/stores/toast-store'
 import { UserPlus, Trash2, Mail } from 'lucide-react'
 import type { BrandMember } from '@vfs/shared-types'
+
+const container = {
+  hidden: { opacity: 0 },
+  visible: { opacity: 1, transition: { staggerChildren: 0.05 } },
+}
+
+const item = {
+  hidden: { opacity: 0, y: 16 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.4, ease: [0.16, 1, 0.3, 1] } },
+}
 
 export default function MembersPage() {
   const [showInvite, setShowInvite] = useState(false)
@@ -52,8 +63,13 @@ export default function MembersPage() {
   })
 
   return (
-    <div className="animate-fade-in">
-      <div className="mb-8 flex items-center justify-between">
+    <motion.div
+      className="animate-fade-in"
+      variants={container}
+      initial="hidden"
+      animate="visible"
+    >
+      <motion.div variants={item} className="mb-8 flex items-center justify-between">
         <div>
           <h1 className="font-display text-3xl tracking-tight text-text-primary">Membres</h1>
           <p className="mt-1 text-text-secondary">Gérez votre équipe</p>
@@ -61,52 +77,54 @@ export default function MembersPage() {
         <Button size="sm" iconLeft={<UserPlus className="h-3.5 w-3.5" />} onClick={() => setShowInvite(true)}>
           Inviter
         </Button>
-      </div>
+      </motion.div>
 
-      <Card>
-        {isLoading ? (
-          <div className="py-12 text-center text-sm text-text-secondary">Chargement...</div>
-        ) : (
-          <div>
-            {(members || []).map((member: BrandMember) => (
-              <div
-                key={member.user_id}
-                className="flex items-center justify-between border-b border-border-subtle px-4 py-3 last:border-0"
-              >
-                <div className="flex items-center gap-3">
-                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-bg-elevated text-xs font-medium text-text-primary">
-                    {(member as any).email?.[0] || '?'}
+      <motion.div variants={item}>
+        <Card>
+          {isLoading ? (
+            <div className="py-12 text-center text-sm text-text-secondary">Chargement...</div>
+          ) : (
+            <div>
+              {(members || []).map((member: BrandMember) => (
+                <div
+                  key={member.user_id}
+                  className="flex items-center justify-between border-b border-border-subtle px-4 py-3 last:border-0"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-bg-elevated text-xs font-medium text-text-primary">
+                      {(member as any).email?.[0] || '?'}
+                    </div>
+                    <div>
+                      <p className="text-sm text-text-primary">{(member as any).email || member.user_id}</p>
+                      <Badge status={member.role === 'admin' ? 'active' : 'default'} className="text-2xs">
+                        {member.role === 'admin' ? 'Admin' : 'Membre'}
+                      </Badge>
+                    </div>
                   </div>
-                  <div>
-                    <p className="text-sm text-text-primary">{(member as any).email || member.user_id}</p>
-                    <Badge status={member.role === 'admin' ? 'active' : 'default'} className="text-2xs">
-                      {member.role === 'admin' ? 'Admin' : 'Membre'}
-                    </Badge>
-                  </div>
+                  {member.role !== 'admin' && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => removeMutation.mutate(member.user_id)}
+                      className="text-status-error"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  )}
                 </div>
-                {member.role !== 'admin' && (
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => removeMutation.mutate(member.user_id)}
-                    className="text-status-error"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                )}
-              </div>
-            ))}
-            {(!members || members.length === 0) && (
-              <div className="py-12 text-center">
-                <Mail className="mx-auto h-8 w-8 text-text-tertiary" />
-                <p className="mt-3 text-sm text-text-secondary">
-                  Invitez des membres de votre équipe
-                </p>
-              </div>
-            )}
-          </div>
-        )}
-      </Card>
+              ))}
+              {(!members || members.length === 0) && (
+                <div className="py-12 text-center">
+                  <Mail className="mx-auto h-8 w-8 text-text-tertiary" />
+                  <p className="mt-3 text-sm text-text-secondary">
+                    Invitez des membres de votre équipe
+                  </p>
+                </div>
+              )}
+            </div>
+          )}
+        </Card>
+      </motion.div>
 
       <Dialog open={showInvite} onClose={() => setShowInvite(false)} title="Inviter un membre">
         <div className="space-y-4">
@@ -140,6 +158,6 @@ export default function MembersPage() {
           </Button>
         </div>
       </Dialog>
-    </div>
+    </motion.div>
   )
 }

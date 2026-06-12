@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useCallback } from 'react'
+import { motion } from 'framer-motion'
 import { useStudioStore } from '@/stores/studio-store'
 import { useToastStore } from '@/stores/toast-store'
 import { PhotoUploadZone } from '@/components/studio/photo-upload'
@@ -12,6 +13,16 @@ import { JobProgress } from '@/components/studio/job-progress'
 import { useGenerationJob } from '@/hooks/use-generation-job'
 import { api } from '@/lib/api'
 import type { GarmentCategory, JobStatus } from '@vfs/shared-types'
+
+const container = {
+  hidden: { opacity: 0 },
+  visible: { opacity: 1, transition: { staggerChildren: 0.06 } },
+}
+
+const item = {
+  hidden: { opacity: 0, y: 16 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.4, ease: [0.16, 1, 0.3, 1] } },
+}
 
 export default function StudioPage() {
   const {
@@ -115,19 +126,24 @@ export default function StudioPage() {
   const isReady = !!activePhoto && !!selectedGarment
 
   return (
-    <div className="animate-fade-in">
+    <motion.div
+      className="animate-fade-in"
+      variants={container}
+      initial="hidden"
+      animate="visible"
+    >
       {/* Header */}
-      <div className="mb-8">
+      <motion.div variants={item} className="mb-8">
         <h1 className="font-display text-3xl tracking-tight text-text-primary">
           Studio
         </h1>
         <p className="mt-1 text-text-secondary">
           Votre shooting photo en 60 secondes
         </p>
-      </div>
+      </motion.div>
 
       {/* Main canvas */}
-      <div className="grid gap-6 lg:grid-cols-2">
+      <motion.div variants={item} className="grid gap-6 lg:grid-cols-2">
         {/* Left: Uploads */}
         <div className="space-y-6">
           <PhotoUploadZone
@@ -198,7 +214,7 @@ export default function StudioPage() {
             </div>
           )}
         </div>
-      </div>
-    </div>
+      </motion.div>
+    </motion.div>
   )
 }

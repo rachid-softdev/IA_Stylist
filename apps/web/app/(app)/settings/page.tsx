@@ -1,5 +1,6 @@
 'use client'
 
+import { motion } from 'framer-motion'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -9,18 +10,33 @@ import { useAuthStore } from '@/stores/auth-store'
 import { LogOut, Trash2 } from 'lucide-react'
 import { useToastStore } from '@/stores/toast-store'
 
+const container = {
+  hidden: { opacity: 0 },
+  visible: { opacity: 1, transition: { staggerChildren: 0.06 } },
+}
+
+const item = {
+  hidden: { opacity: 0, y: 16 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.4, ease: [0.16, 1, 0.3, 1] } },
+}
+
 export default function SettingsPage() {
   const { user, logout } = useAuthStore()
   const { addToast } = useToastStore()
 
   return (
-    <div className="animate-fade-in">
-      <div className="mb-8">
+    <motion.div
+      className="animate-fade-in"
+      variants={container}
+      initial="hidden"
+      animate="visible"
+    >
+      <motion.div variants={item} className="mb-8">
         <h1 className="font-display text-3xl tracking-tight text-text-primary">Paramètres</h1>
         <p className="mt-1 text-text-secondary">Gérez votre compte et vos préférences</p>
-      </div>
+      </motion.div>
 
-      <div className="max-w-2xl space-y-6">
+      <motion.div variants={item} className="max-w-2xl space-y-6">
         {/* Profile */}
         <Card>
           <h3 className="mb-4 font-heading text-base text-text-primary">Profil</h3>
@@ -83,7 +99,7 @@ export default function SettingsPage() {
         >
           Déconnexion
         </Button>
-      </div>
-    </div>
+      </motion.div>
+    </motion.div>
   )
 }

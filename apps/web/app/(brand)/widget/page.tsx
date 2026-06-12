@@ -1,11 +1,22 @@
 'use client'
 
 import { useState } from 'react'
+import { motion } from 'framer-motion'
 import { Card } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { useToastStore } from '@/stores/toast-store'
 import { Copy, ShoppingBag, Palette, Code } from 'lucide-react'
+
+const container = {
+  hidden: { opacity: 0 },
+  visible: { opacity: 1, transition: { staggerChildren: 0.06 } },
+}
+
+const item = {
+  hidden: { opacity: 0, y: 16 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.4, ease: [0.16, 1, 0.3, 1] } },
+}
 
 export default function WidgetConfigPage() {
   const [primary, setPrimary] = useState('#6366f1')
@@ -34,15 +45,20 @@ export default function WidgetConfigPage() {
   }
 
   return (
-    <div className="animate-fade-in">
-      <div className="mb-8">
+    <motion.div
+      className="animate-fade-in"
+      variants={container}
+      initial="hidden"
+      animate="visible"
+    >
+      <motion.div variants={item} className="mb-8">
         <h1 className="font-display text-3xl tracking-tight text-text-primary">Widget Shopify</h1>
         <p className="mt-1 text-text-secondary">
           Intégrez le try-on virtuel sur votre boutique
         </p>
-      </div>
+      </motion.div>
 
-      <div className="grid gap-6 lg:grid-cols-2">
+      <motion.div variants={item} className="grid gap-6 lg:grid-cols-2">
         <Card>
           <div className="mb-4 flex items-center gap-3">
             <Palette className="h-5 w-5 text-accent-primary" />
@@ -113,9 +129,9 @@ export default function WidgetConfigPage() {
             </Button>
           </div>
         </Card>
-      </div>
+      </motion.div>
 
-      <div className="mt-8">
+      <motion.div variants={item} className="mt-8">
         <Card>
           <h3 className="mb-2 font-heading text-sm text-text-primary">Méta-données pour le thème</h3>
           <p className="mb-4 text-xs text-text-secondary">
@@ -137,7 +153,7 @@ export default function WidgetConfigPage() {
             </Button>
           </div>
         </Card>
-      </div>
-    </div>
+      </motion.div>
+    </motion.div>
   )
 }

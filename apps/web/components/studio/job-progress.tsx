@@ -18,12 +18,16 @@ export function JobProgress({ jobId, status }: JobProgressProps) {
   const message = statusMessages[status || 'queued'] || 'Préparation...'
   const percent = status === 'queued' ? 10 : status === 'processing' ? 60 : status === 'done' ? 100 : 0
 
+  const isProcessing = status === 'processing'
+
   return (
     <div
       role="status"
       aria-label="Génération en cours"
       aria-live="polite"
-      className="rounded-lg border border-border-default bg-bg-surface p-8 text-center"
+      className={`rounded-lg border border-border-default bg-bg-surface p-8 text-center transition-all duration-300 ${
+        isProcessing ? 'animate-pulse-glow border-accent-primary/30' : ''
+      }`}
     >
       <div className="mb-6 flex justify-center">
         <Spinner size="md" />

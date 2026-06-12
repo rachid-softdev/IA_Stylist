@@ -21,7 +21,7 @@ export function Badge({ status, className, children }: BadgeProps) {
   return (
     <span
       className={cn(
-        'inline-flex items-center rounded-full border px-2 py-0.5 text-xs font-medium',
+        'inline-flex items-center rounded-full border px-2 py-0.5 text-xs font-medium transition-all duration-300',
         colorMap[status] || colorMap.done,
         className,
       )}

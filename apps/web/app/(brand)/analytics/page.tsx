@@ -2,11 +2,22 @@
 
 import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
+import { motion } from 'framer-motion'
 import { api } from '@/lib/api'
 import { Card } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Badge } from '@/components/ui/badge'
 import { TrendingUp, Package, RefreshCw, DollarSign } from 'lucide-react'
+
+const container = {
+  hidden: { opacity: 0 },
+  visible: { opacity: 1, transition: { staggerChildren: 0.06 } },
+}
+
+const item = {
+  hidden: { opacity: 0, y: 16 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.4, ease: [0.16, 1, 0.3, 1] } },
+}
 
 interface OverviewData {
   total_tryons: number
@@ -59,8 +70,13 @@ export default function AnalyticsPage() {
   const maxCount = Math.max(...(data?.time_series?.map(t => t.count) || [1]), 1)
 
   return (
-    <div className="animate-fade-in">
-      <div className="mb-8 flex items-center justify-between">
+    <motion.div
+      className="animate-fade-in"
+      variants={container}
+      initial="hidden"
+      animate="visible"
+    >
+      <motion.div variants={item} className="mb-8 flex items-center justify-between">
         <div>
           <h1 className="font-display text-3xl tracking-tight text-text-primary">Analytics</h1>
           <p className="mt-1 text-text-secondary">Analysez les performances de vos try-ons</p>
@@ -80,10 +96,10 @@ export default function AnalyticsPage() {
             </button>
           ))}
         </div>
-      </div>
+      </motion.div>
 
       {/* KPI Row */}
-      <div className="mb-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <motion.div variants={item} className="mb-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {isLoading ? (
           Array.from({ length: 4 }).map((_, i) => (
             <Card key={i} hover={false}>
@@ -137,10 +153,10 @@ export default function AnalyticsPage() {
             </Card>
           </>
         )}
-      </div>
+      </motion.div>
 
       {/* Charts */}
-      <div className="mb-8 grid gap-6 lg:grid-cols-2">
+      <motion.div variants={item} className="mb-8 grid gap-6 lg:grid-cols-2">
         <Card hover={false}>
           <h3 className="mb-4 font-heading text-sm text-text-secondary uppercase tracking-widest">
             Try-ons par jour
@@ -200,14 +216,14 @@ export default function AnalyticsPage() {
             </div>
           )}
         </Card>
-      </div>
+      </motion.div>
 
       {overview?.is_estimate && (
-        <p className="text-xs text-text-tertiary text-center">
+        <motion.p variants={item} className="text-xs text-text-tertiary text-center">
           * Les données de conversion et retours sont des estimations basées sur les moyennes du secteur.
           Connectez votre boutique Shopify pour des données précises.
-        </p>
+        </motion.p>
       )}
-    </div>
+    </motion.div>
   )
 }
