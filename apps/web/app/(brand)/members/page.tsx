@@ -30,8 +30,6 @@ export default function MembersPage() {
   const { addToast } = useToastStore()
   const queryClient = useQueryClient()
 
-  const brandId = '' // Should come from auth/brand context
-
   const { data: members, isLoading } = useQuery({
     queryKey: ['brand-members'],
     queryFn: async () => {
@@ -40,8 +38,12 @@ export default function MembersPage() {
     },
   })
 
+  // Derive brandId from first member's brand_id
+  const brandId: string | null = (members && members.length > 0) ? members[0].brand_id : null
+
   const inviteMutation = useMutation({
     mutationFn: async (email: string) => {
+      if (!brandId) throw new Error('Aucune marque associée à votre compte')
       return api.post(`/brands/${brandId}/members`, { email, role })
     },
     onSuccess: () => {
@@ -50,15 +52,22 @@ export default function MembersPage() {
       setEmail('')
       addToast({ type: 'success', title: 'Membre ajouté' })
     },
+    onError: (err: Error) => {
+      addToast({ type: 'error', title: 'Invitation échouée', message: err.message })
+    },
   })
 
   const removeMutation = useMutation({
     mutationFn: async (userId: string) => {
+      if (!brandId) throw new Error('Aucune marque associée à votre compte')
       return api.delete(`/brands/${brandId}/members/${userId}`)
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['brand-members'] })
       addToast({ type: 'success', title: 'Membre retiré' })
+    },
+    onError: (err: Error) => {
+      addToast({ type: 'error', title: 'Suppression échouée', message: err.message })
     },
   })
 

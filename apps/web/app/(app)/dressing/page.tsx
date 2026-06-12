@@ -124,8 +124,8 @@ export default function DressingPage() {
                   <div className="aspect-square w-full bg-bg-elevated" />
                 )}
 
-                {/* Overlay actions */}
-                <div className="absolute inset-x-0 bottom-0 translate-y-full bg-gradient-to-t from-bg-base/95 to-transparent p-3 pt-8 transition-transform duration-200 group-hover:translate-y-0">
+                {/* Overlay actions — always visible on mobile, hover-reveal on desktop */}
+                <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-bg-base/95 to-transparent p-3 pt-8 transition-transform duration-200 md:translate-y-full md:group-hover:translate-y-0">
                   <div className="flex items-center justify-between">
                     <Button
                       variant="ghost"
@@ -136,7 +136,7 @@ export default function DressingPage() {
                         job.result_url && handleDownload(job.result_url, job.id)
                       }}
                     >
-                      DL
+                      Télécharger
                     </Button>
                     <Button
                       variant="ghost"
@@ -147,7 +147,7 @@ export default function DressingPage() {
                         handleDelete(job.id)
                       }}
                     >
-                      Suppr.
+                      Supprimer
                     </Button>
                   </div>
                 </div>
