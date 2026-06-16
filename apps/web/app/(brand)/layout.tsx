@@ -1,27 +1,15 @@
-'use client'
-
 import { MotionConfig } from 'framer-motion'
 import { BrandSidebar } from '@/components/shared/brand-sidebar'
-import { useRouter } from 'next/navigation'
-import { useAuthStore } from '@/stores/auth-store'
-import { useEffect } from 'react'
+import { PageTransition } from '@/components/shared/page-transition'
+import { createServerSupabase } from '@/lib/supabase/server'
+import { redirect } from 'next/navigation'
 
-export default function BrandLayout({ children }: { children: React.ReactNode }) {
-  const router = useRouter()
-  const { user, isLoading } = useAuthStore()
+export default async function BrandLayout({ children }: { children: React.ReactNode }) {
+  const supabase = await createServerSupabase()
+  const { data: { user } } = await supabase.auth.getUser()
 
-  useEffect(() => {
-    if (!isLoading && !user) {
-      router.push('/login')
-    }
-  }, [user, isLoading, router])
-
-  if (isLoading || !user) {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-bg-base">
-        <div className="h-8 w-8 animate-spin rounded-full border-2 border-accent-primary border-t-transparent" />
-      </div>
-    )
+  if (!user) {
+    redirect('/login')
   }
 
   return (
@@ -30,7 +18,7 @@ export default function BrandLayout({ children }: { children: React.ReactNode })
         <BrandSidebar />
         <div className="lg:pl-60">
           <div className="mx-auto max-w-grid px-4 py-8 md:px-8">
-            {children}
+            <PageTransition>{children}</PageTransition>
           </div>
         </div>
       </div>
