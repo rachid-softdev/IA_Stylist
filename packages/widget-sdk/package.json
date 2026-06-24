@@ -7,6 +7,7 @@
   "scripts": {
     "build": "esbuild src/index.ts --bundle --minify --outfile=dist/widget.js --format=iife --global-name=VFSWidget",
     "dev": "esbuild src/index.ts --bundle --outfile=dist/widget.js --format=iife --global-name=VFSWidget --watch",
+    "typecheck": "tsc --noEmit",
     "test": "vitest run"
   },
   "devDependencies": {

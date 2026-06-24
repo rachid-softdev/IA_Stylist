@@ -2,7 +2,7 @@
 
 import { motion, MotionConfig, useReducedMotion } from 'framer-motion'
 import Link from 'next/link'
-import { ArrowRight, Sparkles, Zap, Camera, BarChart3, Shield, ChevronRight } from 'lucide-react'
+import { ArrowRight, Sparkles, Zap, Camera, BarChart3, ChevronRight } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Demoslider } from '@/components/landing/demo-slider'
 

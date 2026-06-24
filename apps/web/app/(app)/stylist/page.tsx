@@ -10,11 +10,12 @@ import { Sparkles, ThumbsUp, ThumbsDown } from 'lucide-react'
 import { useToastStore } from '@/stores/toast-store'
 
 interface StylistProfile {
-  status: string
+  status: 'no_profile' | 'complete' | 'analyzing'
   data?: {
     metadata?: {
       morphologie?: string
       teint?: string
+      style?: string
     }
   }
 }
@@ -28,7 +29,6 @@ const item = {
   hidden: { opacity: 0, y: 16 },
   visible: { opacity: 1, y: 0, transition: { duration: 0.4, ease: [0.16, 1, 0.3, 1] } },
 }
-
 export default function StylistPage() {
   const { addToast } = useToastStore()
 

@@ -2,7 +2,7 @@
 
 import { cn } from '@vfs/utils'
 import { useCallback, useState, type DragEvent } from 'react'
-import { Upload, Image as ImageIcon, AlertCircle } from 'lucide-react'
+import { Upload, AlertCircle } from 'lucide-react'
 
 interface UploadZoneProps {
   onFile: (file: File) => void
