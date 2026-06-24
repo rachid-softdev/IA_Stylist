@@ -1,4 +1,4 @@
-import type { ApiResponse, ApiError } from '@vfs/shared-types'
+import type { ApiResponse } from '@vfs/shared-types'
 
 export class ApiClientError extends Error {
   public readonly code: string

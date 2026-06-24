@@ -37,7 +37,7 @@ export function GarmentSelector({ selected, onSelect }: GarmentSelectorProps) {
 
   const { upload, isUploading, progress } = useUpload({
     folder: 'uploads/garments',
-    onSuccess: (url, r2Key) => {
+    onSuccess: (url, _r2Key) => {
       onSelect({
         image_url: url,
         category: 'top', // Default, user can change with CategorySelect

@@ -3,10 +3,7 @@
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Button } from '@/components/ui/button'
-import { UploadZone } from '@/components/ui/upload-zone'
 import { ArrowRight, ArrowLeft, Camera } from 'lucide-react'
-import { useUpload } from '@/hooks/use-upload'
-import { useToastStore } from '@/stores/toast-store'
 
 const stepVariants = {
   enter: { opacity: 0, y: 20 },
@@ -16,8 +13,6 @@ const stepVariants = {
 
 export default function OnboardingPage() {
   const [step, setStep] = useState(1)
-  const [photos, setPhotos] = useState<string[]>([])
-  const { addToast } = useToastStore()
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-bg-base px-4">

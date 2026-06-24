@@ -66,7 +66,7 @@ describe('ApiClient - CSRF Token Handling', () => {
     await api.post('/test', { foo: 'bar' })
 
     expect(mockFetch).toHaveBeenCalledTimes(1)
-    const callHeaders = mockFetch.mock.calls[0][1].headers
+    const callHeaders = mockFetch.mock.calls[0]![1]!.headers
     expect(callHeaders['X-CSRF-Token']).toBe('abc123def456')
   })
 
@@ -83,7 +83,7 @@ describe('ApiClient - CSRF Token Handling', () => {
     const { api } = await import('@/lib/api')
     await api.put('/test', { foo: 'bar' })
 
-    const callHeaders = mockFetch.mock.calls[0][1].headers
+    const callHeaders = mockFetch.mock.calls[0]![1]!.headers
     expect(callHeaders['X-CSRF-Token']).toBe('abc123def456')
   })
 
@@ -100,7 +100,7 @@ describe('ApiClient - CSRF Token Handling', () => {
     const { api } = await import('@/lib/api')
     await api.delete('/test')
 
-    const callHeaders = mockFetch.mock.calls[0][1].headers
+    const callHeaders = mockFetch.mock.calls[0]![1]!.headers
     expect(callHeaders['X-CSRF-Token']).toBe('abc123def456')
   })
 
@@ -117,7 +117,7 @@ describe('ApiClient - CSRF Token Handling', () => {
     const { api } = await import('@/lib/api')
     await api.get('/test')
 
-    const callHeaders = mockFetch.mock.calls[0][1].headers
+    const callHeaders = mockFetch.mock.calls[0]![1]!.headers
     expect(callHeaders['X-CSRF-Token']).toBeUndefined()
   })
 
@@ -141,7 +141,7 @@ describe('ApiClient - CSRF Token Handling', () => {
     const { api } = await import('@/lib/api')
     await api.post('/test', { foo: 'bar' })
 
-    const callHeaders = mockFetch.mock.calls[0][1].headers
+    const callHeaders = mockFetch.mock.calls[0]![1]!.headers
     // Should not have X-CSRF-Token when cookie is missing
     expect(callHeaders['X-CSRF-Token']).toBeUndefined()
   })
@@ -165,7 +165,7 @@ describe('ApiClient - CSRF Token Handling', () => {
     const { api } = await import('@/lib/api')
     await api.post('/test')
 
-    const callHeaders = mockFetch.mock.calls[0][1].headers
+    const callHeaders = mockFetch.mock.calls[0]![1]!.headers
     expect(callHeaders['X-CSRF-Token']).toBeUndefined()
   })
 })
@@ -241,7 +241,7 @@ describe('ApiClient - Request Configuration', () => {
     const { api } = await import('@/lib/api')
     await api.get('/test')
 
-    expect(mockFetch.mock.calls[0][1].credentials).toBe('include')
+    expect(mockFetch.mock.calls[0]![1]!.credentials).toBe('include')
   })
 
   it('should set Content-Type header for requests with body', async () => {
@@ -258,7 +258,7 @@ describe('ApiClient - Request Configuration', () => {
     const { api } = await import('@/lib/api')
     await api.post('/test', { key: 'value' })
 
-    const callHeaders = mockFetch.mock.calls[0][1].headers
+    const callHeaders = mockFetch.mock.calls[0]![1]!.headers
     expect(callHeaders['Content-Type']).toBe('application/json')
   })
 })

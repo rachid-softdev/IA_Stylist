@@ -40,7 +40,7 @@ export default function MembersPage() {
   })
 
   // Derive brandId from first member's brand_id
-  const brandId: string | null = (members && members.length > 0) ? members[0].brand_id : null
+  const brandId: string | null = (members && members.length > 0 && members[0]) ? members[0].brand_id : null
 
   const inviteMutation = useMutation({
     mutationFn: async (email: string) => {
@@ -103,10 +103,10 @@ export default function MembersPage() {
                 >
                   <div className="flex items-center gap-3">
                     <div className="flex h-8 w-8 items-center justify-center rounded-full bg-bg-elevated text-xs font-medium text-text-primary">
-                      {(member as any).email?.[0] || '?'}
+                      {member.user?.email?.[0] || '?'}
                     </div>
                     <div>
-                      <p className="text-sm text-text-primary">{(member as any).email || member.user_id}</p>
+                      <p className="text-sm text-text-primary">{member.user?.email || member.user_id}</p>
                       <Badge status={member.role === 'admin' ? 'active' : 'default'} className="text-2xs">
                         {member.role === 'admin' ? 'Admin' : 'Membre'}
                       </Badge>
