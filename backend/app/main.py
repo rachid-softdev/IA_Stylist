@@ -15,7 +15,7 @@ from app.middleware.auth_middleware import AuthMiddleware
 from app.middleware.api_key import ApiKeyMiddleware
 from app.middleware.rate_limit import RateLimitMiddleware
 from app.middleware.csrf_middleware import CSRFMiddleware
-from app.routers import auth, upload, generate, credits, dressing, brands, catalog, analytics, webhooks, stylist, ws, widget, onboarding
+from app.routers import auth, upload, generate, credits, dressing, brands, catalog, analytics, conversion, webhooks, stylist, ws, widget, onboarding
 
 settings = get_settings()
 
@@ -122,6 +122,7 @@ app.include_router(stylist.router, prefix="/v1/stylist", tags=["AI Stylist"])
 app.include_router(ws.router, prefix="/v1", tags=["WebSocket"])
 app.include_router(widget.router, prefix="/v1/widget", tags=["Widget"])
 app.include_router(onboarding.router, prefix="/v1/onboarding", tags=["Onboarding"])
+app.include_router(conversion.router, prefix="/v1/brands", tags=["Conversion"])
 
 
 @app.get("/health")

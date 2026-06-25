@@ -8,7 +8,8 @@ import { Card } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
 import { AnimatedNumber } from '@/components/ui/animated-number'
 import { Button } from '@/components/ui/button'
-import { TrendingUp, Package, RefreshCw, DollarSign, Download } from 'lucide-react'
+import { TrendingUp, Package, RefreshCw, DollarSign, Download, BadgeCheck as BadgeCheckIcon } from 'lucide-react'
+import { ConversionSettings } from '@/components/analytics/conversion-settings'
 
 const container = {
   hidden: { opacity: 0 },
@@ -165,9 +166,21 @@ export default function AnalyticsPage() {
                   <div className="min-w-0">
                     <p className="text-xs text-text-tertiary uppercase tracking-widest">Conversion</p>
                     <p className="mt-1 font-display text-xl text-text-primary">{overview?.conversion_rate || 0}%</p>
-                    <p className="mt-0.5 text-xs text-text-tertiary">Via Shopify</p>
+                    <p className="mt-0.5 flex items-center gap-1 text-xs">
+                      {overview?.is_estimate ? (
+                        <span className="text-text-tertiary">Estimé</span>
+                      ) : (
+                        <span className="flex items-center gap-1 text-gen-done">
+                          <BadgeCheckIcon className="h-3 w-3" />
+                          Données réelles
+                        </span>
+                      )}
+                    </p>
                   </div>
-                  <TrendingUp className="mt-0.5 h-4 w-4 shrink-0 text-text-tertiary" />
+                  <div className="flex items-center gap-1">
+                    <ConversionSettings />
+                    <TrendingUp className="h-4 w-4 shrink-0 text-text-tertiary" />
+                  </div>
                 </div>
               </Card>
               <Card hover>
@@ -175,7 +188,16 @@ export default function AnalyticsPage() {
                   <div className="min-w-0">
                     <p className="text-xs text-text-tertiary uppercase tracking-widest">Retours évités</p>
                     <p className="mt-1 font-display text-xl text-text-primary"><AnimatedNumber value={overview?.returns_saved || 0} /></p>
-                    <p className="mt-0.5 text-xs text-gen-done">Estimé (-25%)</p>
+                    <p className="mt-0.5 text-xs">
+                      {overview?.is_estimate ? (
+                        <span className="text-text-tertiary">Estimé (-25%)</span>
+                      ) : (
+                        <span className="flex items-center gap-1 text-gen-done">
+                          <BadgeCheckIcon className="h-3 w-3" />
+                          Données réelles
+                        </span>
+                      )}
+                    </p>
                   </div>
                   <RefreshCw className="mt-0.5 h-4 w-4 shrink-0 text-text-tertiary" />
                 </div>

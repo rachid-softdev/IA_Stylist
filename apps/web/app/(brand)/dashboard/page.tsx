@@ -48,6 +48,7 @@ interface DashboardData {
   }
   tryon_history: { date: string; count: number }[]
   top_skus: { sku: string; name: string; tryons: number }[]
+  is_estimate?: boolean
 }
 
 export default function BrandDashboardPage() {
@@ -134,7 +135,7 @@ export default function BrandDashboardPage() {
             {/* Secondary metrics row */}
             <div className="grid gap-4 sm:grid-cols-3">
               {[
-                { label: 'Conversion', value: `${data.metrics.conversion}%`, delta: data.deltas.conversion, icon: TrendingUp },
+                { label: `Conversion${data.is_estimate ? '' : ' ✓'}`, value: `${data.metrics.conversion}%`, delta: data.deltas.conversion, icon: TrendingUp },
                 { label: 'Retours évités', value: data.metrics.returns_prevented, delta: data.deltas.returns, icon: RefreshCw },
                 { label: 'Économies', value: `${data.metrics.savings.toLocaleString('fr-FR')}€`, delta: data.deltas.savings, icon: DollarSign },
               ].map((kpi) => {
