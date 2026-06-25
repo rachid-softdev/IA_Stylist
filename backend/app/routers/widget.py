@@ -1,5 +1,7 @@
 import json
 import logging
+import os
+from datetime import datetime, timezone
 from typing import Optional
 from fastapi import APIRouter, Depends, HTTPException, Request, status, Form, UploadFile, File
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -16,6 +18,22 @@ from app.services.websocket import push_job_update
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
+
+
+# In-memory event buffer flushed to disk periodically
+_widget_events: list[dict] = []
+_EVENT_LOG_PATH = os.environ.get("WIDGET_EVENT_LOG", "data/widget-events.jsonl")
+
+
+def _flush_events():
+    """Flush buffered events to JSONL file."""
+    if not _widget_events:
+        return
+    os.makedirs(os.path.dirname(_EVENT_LOG_PATH) or ".", exist_ok=True)
+    with open(_EVENT_LOG_PATH, "a") as f:
+        for event in _widget_events:
+            f.write(json.dumps(event, default=str) + "\n")
+    _widget_events.clear()
 
 
 @router.post("/auth")
@@ -122,11 +140,14 @@ async def widget_generate(
     # Enqueue task
     from app.worker.celery_app import celery_app
 
-    celery_app.send_task(
+    task = celery_app.send_task(
         "app.worker.tasks.generate_image.generate_tryon_image",
         args=[job.id],
         queue="default",
     )
+
+    job.celery_task_id = task.id
+    await db.commit()
 
     return {
         "data": {
@@ -136,12 +157,39 @@ async def widget_generate(
     }
 
 
+@router.get("/jobs/{job_id}")
+async def widget_get_job(job_id: str, db: AsyncSession = Depends(get_db)):
+    """Get job status and result (for widget SDK polling)."""
+    result = await db.execute(select(GenerationJob).where(GenerationJob.id == job_id))
+    job = result.scalar_one_or_none()
+
+    if not job:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail={"code": "JOB_NOT_FOUND", "message": "Job not found"},
+        )
+
+    return {
+        "data": {
+            "job_id": job.id,
+            "status": job.status,
+            "result_url": job.result_url,
+            "error_message": job.error_message,
+        }
+    }
+
+
 @router.post("/track")
 async def widget_track(request: Request):
-    """Track widget events."""
+    """Track widget events. Buffered and flushed to JSONL for analytics."""
     try:
         body = await request.json()
-        logger.info("Widget event: %s", json.dumps(body))
+        body["_timestamp"] = datetime.now(timezone.utc).isoformat()
+        body["_source"] = "widget"
+        _widget_events.append(body)
+        if len(_widget_events) >= 100:
+            _flush_events()
+        logger.info("Widget event: %s", body.get("event", "unknown"))
     except Exception:
         pass
     return {"status": "ok"}
