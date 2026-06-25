@@ -90,7 +90,7 @@ function HeroSection() {
       >
         {/* Eyebrow — single, deliberate, not on every section */}
         <motion.div variants={child} className="mb-6">
-          <span className="inline-block rounded-full border border-border-default bg-bg-surface/50 px-4 py-1 text-2xs font-medium uppercase tracking-widest text-accent-primary backdrop-blur-sm">
+          <span className="inline-block rounded-full border border-border-default bg-bg-surface px-4 py-1 text-2xs font-medium uppercase tracking-widest text-accent-primary">
             IA Fashion Studio
           </span>
         </motion.div>

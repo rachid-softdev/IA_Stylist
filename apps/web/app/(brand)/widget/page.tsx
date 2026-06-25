@@ -23,7 +23,7 @@ const item = {
 }
 
 export default function WidgetConfigPage() {
-  const [primary, setPrimary] = useState('#6366f1')
+  const [primary, setPrimary] = useState('#D4A853')
   const [buttonText, setButtonText] = useState('Essayer virtuellement')
   const { addToast } = useToastStore()
 

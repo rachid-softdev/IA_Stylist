@@ -108,50 +108,55 @@ export default function AnalyticsPage() {
             </Card>
           ))
         ) : (
-          <>
-            <Card hover>
+          <div className="space-y-4">
+            {/* Hero metric */}
+            <Card hover className="lg:col-span-2">
               <div className="flex items-start justify-between">
                 <div>
                   <p className="text-xs text-text-tertiary uppercase tracking-widest">Try-ons</p>
-                  <p className="mt-1 font-display text-2xl text-text-primary"><AnimatedNumber value={overview?.total_tryons || 0} /></p>
+                  <p className="mt-1 font-display text-3xl text-text-primary"><AnimatedNumber value={overview?.total_tryons || 0} /></p>
                   <p className={`mt-0.5 text-xs ${(overview?.tryons_delta || 0) >= 0 ? 'text-gen-done' : 'text-status-error'}`}>
                     {overview?.tryons_delta || 0}% vs période préc.
                   </p>
                 </div>
-                <Package className="h-5 w-5 text-text-tertiary" />
+                <Package className="mt-0.5 h-6 w-6 shrink-0 text-accent-primary" />
               </div>
             </Card>
-            <Card hover>
-              <div className="flex items-start justify-between">
-                <div>
-                  <p className="text-xs text-text-tertiary uppercase tracking-widest">Conversion</p>
-                  <p className="mt-1 font-display text-2xl text-text-primary">{overview?.conversion_rate || 0}%</p>
-                  <p className="mt-0.5 text-xs text-text-tertiary">Via Shopify</p>
+
+            {/* Secondary metrics */}
+            <div className="grid gap-4 sm:grid-cols-3">
+              <Card hover>
+                <div className="flex items-start justify-between">
+                  <div className="min-w-0">
+                    <p className="text-xs text-text-tertiary uppercase tracking-widest">Conversion</p>
+                    <p className="mt-1 font-display text-xl text-text-primary">{overview?.conversion_rate || 0}%</p>
+                    <p className="mt-0.5 text-xs text-text-tertiary">Via Shopify</p>
+                  </div>
+                  <TrendingUp className="mt-0.5 h-4 w-4 shrink-0 text-text-tertiary" />
                 </div>
-                <TrendingUp className="h-5 w-5 text-text-tertiary" />
-              </div>
-            </Card>
-            <Card hover>
-              <div className="flex items-start justify-between">
-                <div>
-                  <p className="text-xs text-text-tertiary uppercase tracking-widest">Retours évités</p>
-                  <p className="mt-1 font-display text-2xl text-text-primary"><AnimatedNumber value={overview?.returns_saved || 0} /></p>
-                  <p className="mt-0.5 text-xs text-gen-done">Estimé (-25%)</p>
+              </Card>
+              <Card hover>
+                <div className="flex items-start justify-between">
+                  <div className="min-w-0">
+                    <p className="text-xs text-text-tertiary uppercase tracking-widest">Retours évités</p>
+                    <p className="mt-1 font-display text-xl text-text-primary"><AnimatedNumber value={overview?.returns_saved || 0} /></p>
+                    <p className="mt-0.5 text-xs text-gen-done">Estimé (-25%)</p>
+                  </div>
+                  <RefreshCw className="mt-0.5 h-4 w-4 shrink-0 text-text-tertiary" />
                 </div>
-                <RefreshCw className="h-5 w-5 text-text-tertiary" />
-              </div>
-            </Card>
-            <Card hover>
-              <div className="flex items-start justify-between">
-                <div>
-                  <p className="text-xs text-text-tertiary uppercase tracking-widest">Économies</p>
-                  <p className="mt-1 font-display text-2xl text-text-primary">{overview?.cost_savings?.toLocaleString() || 0}€</p>
-                  <p className="mt-0.5 text-xs text-text-tertiary">vs shooting classique</p>
+              </Card>
+              <Card hover>
+                <div className="flex items-start justify-between">
+                  <div className="min-w-0">
+                    <p className="text-xs text-text-tertiary uppercase tracking-widest">Économies</p>
+                    <p className="mt-1 font-display text-xl text-text-primary">{overview?.cost_savings?.toLocaleString() || 0}€</p>
+                    <p className="mt-0.5 text-xs text-text-tertiary">vs shooting classique</p>
+                  </div>
+                  <DollarSign className="mt-0.5 h-4 w-4 shrink-0 text-text-tertiary" />
                 </div>
-                <DollarSign className="h-5 w-5 text-text-tertiary" />
-              </div>
-            </Card>
-          </>
+              </Card>
+            </div>
+          </div>
         )}
       </motion.div>
 

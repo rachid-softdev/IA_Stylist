@@ -114,58 +114,51 @@ export default function BrandDashboardPage() {
             </div>
           </div>
         ) : (
-          [
-            {
-              label: 'Try-ons',
-              value: data.metrics.tryons,
-              delta: data.deltas.tryons,
-              icon: Package,
-            },
-            {
-              label: 'Conversion',
-              value: `${data.metrics.conversion}%`,
-              delta: data.deltas.conversion,
-              icon: TrendingUp,
-            },
-            {
-              label: 'Retours évités',
-              value: data.metrics.returns_prevented,
-              delta: data.deltas.returns,
-              icon: RefreshCw,
-            },
-            {
-              label: 'Économies',
-              value: `${data.metrics.savings.toLocaleString('fr-FR')}€`,
-              delta: data.deltas.savings,
-              icon: DollarSign,
-            },
-          ].map((kpi) => {
-            const Icon = kpi.icon
-            const isPositive = !kpi.delta.startsWith('-')
-
-            return (
-              <Card key={kpi.label} hover>
-                <div className="flex items-start justify-between">
-                  <div className="min-w-0">
-                    <p className="text-xs text-text-tertiary uppercase tracking-widest">
-                      {kpi.label}
-                    </p>
-                    <p className="mt-1 truncate font-display text-2xl text-text-primary">
-                      <AnimatedNumber value={kpi.value} />
-                    </p>
-                    <p
-                      className={`mt-0.5 text-xs ${
-                        isPositive ? 'text-gen-done' : 'text-status-error'
-                      }`}
-                    >
-                      {kpi.delta} vs mois précédent
-                    </p>
-                  </div>
-                  <Icon className="mt-0.5 h-5 w-5 shrink-0 text-text-tertiary" />
+          <div className="space-y-4">
+            {/* Hero metric — Try-ons */}
+            <Card hover>
+              <div className="flex items-start justify-between">
+                <div>
+                  <p className="text-xs text-text-tertiary uppercase tracking-widest">Try-ons</p>
+                  <p className="mt-1 font-display text-3xl text-text-primary">
+                    <AnimatedNumber value={data.metrics.tryons} />
+                  </p>
+                  <p className={`mt-0.5 text-xs ${!data.deltas.tryons.startsWith('-') ? 'text-gen-done' : 'text-status-error'}`}>
+                    {data.deltas.tryons} vs mois précédent
+                  </p>
                 </div>
-              </Card>
-            )
-          })
+                <Package className="mt-0.5 h-6 w-6 shrink-0 text-accent-primary" />
+              </div>
+            </Card>
+
+            {/* Secondary metrics row */}
+            <div className="grid gap-4 sm:grid-cols-3">
+              {[
+                { label: 'Conversion', value: `${data.metrics.conversion}%`, delta: data.deltas.conversion, icon: TrendingUp },
+                { label: 'Retours évités', value: data.metrics.returns_prevented, delta: data.deltas.returns, icon: RefreshCw },
+                { label: 'Économies', value: `${data.metrics.savings.toLocaleString('fr-FR')}€`, delta: data.deltas.savings, icon: DollarSign },
+              ].map((kpi) => {
+                const Icon = kpi.icon
+                const isPositive = !kpi.delta.startsWith('-')
+                return (
+                  <Card key={kpi.label} hover>
+                    <div className="flex items-start justify-between">
+                      <div className="min-w-0">
+                        <p className="text-xs text-text-tertiary uppercase tracking-widest">{kpi.label}</p>
+                        <p className="mt-1 truncate font-display text-xl text-text-primary">
+                          {kpi.value}
+                        </p>
+                        <p className={`mt-0.5 text-xs ${isPositive ? 'text-gen-done' : 'text-status-error'}`}>
+                          {kpi.delta}
+                        </p>
+                      </div>
+                      <Icon className="mt-0.5 h-4 w-4 shrink-0 text-text-tertiary" />
+                    </div>
+                  </Card>
+                )
+              })}
+            </div>
+          </div>
         )}
       </motion.div>
 

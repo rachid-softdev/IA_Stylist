@@ -65,6 +65,17 @@ export default function StudioPage() {
     }
   }, [setSelectedGarment, setCategory])
 
+  const handleCancelGeneration = useCallback(async () => {
+    if (!currentJobId && !isGenerating) return
+    try {
+      await api.post(`/generate/jobs/${currentJobId}/cancel`)
+      addToast({ type: 'info', title: 'Génération annulée', message: 'Votre crédit a été conservé.' })
+      reset()
+    } catch {
+      addToast({ type: 'error', title: 'Erreur', message: 'Impossible d\'annuler la génération' })
+    }
+  }, [currentJobId, isGenerating, addToast, reset])
+
   const handleGenerate = useCallback(async () => {
     if (!activePhoto || !selectedGarment) {
       addToast({
@@ -229,7 +240,7 @@ export default function StudioPage() {
         {/* Right: Result */}
         <div className="space-y-6">
           {isGenerating && currentJobId ? (
-            <JobProgress jobId={currentJobId} status={jobStatus} />
+            <JobProgress jobId={currentJobId} status={jobStatus} onCancel={handleCancelGeneration} />
           ) : resultUrl ? (
             <ResultDisplay
               imageUrl={resultUrl}

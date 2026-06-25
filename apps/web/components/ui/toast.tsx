@@ -13,10 +13,10 @@ const iconMap = {
 }
 
 const colorMap = {
-  success: 'border-l-status-success',
-  error: 'border-l-status-error',
-  warning: 'border-l-status-warning',
-  info: 'border-l-accent-primary',
+  success: 'border-t-status-success',
+  error: 'border-t-status-error',
+  warning: 'border-t-status-warning',
+  info: 'border-t-accent-primary',
 }
 
 const toastVariants = {
@@ -46,7 +46,7 @@ export function Toaster() {
               aria-live="assertive"
               aria-atomic="true"
               className={cn(
-                'flex w-80 items-start gap-3 rounded-lg border bg-bg-surface p-4 shadow-lg border-l-[3px]',
+                'flex w-80 items-start gap-3 rounded-lg border bg-bg-surface p-4 shadow-lg border-t-[3px]',
                 colorMap[toast.type],
               )}
             >
