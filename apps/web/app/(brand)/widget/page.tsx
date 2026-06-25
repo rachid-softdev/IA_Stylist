@@ -1,12 +1,16 @@
 'use client'
 
 import { useState } from 'react'
+import { useQuery } from '@tanstack/react-query'
+import Link from 'next/link'
 import { motion } from 'framer-motion'
 import { Card } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
+import { Skeleton } from '@/components/ui/skeleton'
 import { useToastStore } from '@/stores/toast-store'
-import { Copy, ShoppingBag, Palette, Code } from 'lucide-react'
+import { Copy, ShoppingBag, Palette, Code, Key } from 'lucide-react'
+import { api } from '@/lib/api'
 
 const container = {
   hidden: { opacity: 0 },
@@ -23,21 +27,34 @@ export default function WidgetConfigPage() {
   const [buttonText, setButtonText] = useState('Essayer virtuellement')
   const { addToast } = useToastStore()
 
-  const apiKey = 'vfs_live_...' // Would come from brand context
+  const { data: keys, isLoading } = useQuery<{ id: string; prefix: string; is_active: boolean }[]>({
+    queryKey: ['api-keys'],
+    queryFn: async () => {
+      const res = await api.get<{ id: string; prefix: string; is_active: boolean }[]>('/brands/me/api-keys')
+      return res.data
+    },
+  })
 
-  const scriptTag = `<script src="https://cdn.vfs.ai/widget.js"
-  data-api-key="${apiKey}"
+  const activeKey = keys?.find(k => k.is_active)
+  const apiKeyDisplay = activeKey ? `${activeKey.prefix}...` : null
+
+  const scriptTag = activeKey
+    ? `<script src="https://cdn.vfs.ai/widget.js"
+  data-api-key="${activeKey.prefix}..."
   data-product-id="{{ product.id }}"
   data-sku="{{ variant.sku }}">
 </script>`
+    : `<!-- Créez d'abord une clé API dans Paramètres > Clés API -->`
 
-  const shopifySnippet = `{% if product %}{% for variant in product.variants %}
+  const shopifySnippet = activeKey
+    ? `{% if product %}{% for variant in product.variants %}
 <script src="https://cdn.vfs.ai/widget.js"
-  data-api-key="${apiKey}"
+  data-api-key="${activeKey.prefix}..."
   data-product-id="{{ product.id }}"
   data-sku="{{ variant.sku }}"
   data-variant-id="{{ variant.id }}">
 </script>{% endfor %}{% endif %}`
+    : `<!-- Créez d'abord une clé API dans Paramètres > Clés API -->`
 
   const copyToClipboard = (text: string, label: string) => {
     navigator.clipboard.writeText(text)
@@ -56,6 +73,40 @@ export default function WidgetConfigPage() {
         <p className="mt-1 text-text-secondary">
           Intégrez le try-on virtuel sur votre boutique
         </p>
+      </motion.div>
+
+      {/* API Key status */}
+      <motion.div variants={item} className="mb-6">
+        {isLoading ? (
+          <Skeleton variant="text" className="h-12 w-full" />
+        ) : activeKey ? (
+          <Card className="border-accent-primary/20">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <Key className="h-4 w-4 text-accent-primary" />
+                <div>
+                  <p className="text-sm text-text-primary">Clé API active</p>
+                  <p className="text-xs text-text-tertiary font-mono">{apiKeyDisplay}</p>
+                </div>
+              </div>
+              <Link href="/api-keys" className="text-xs text-accent-primary hover:underline">
+                Gérer
+              </Link>
+            </div>
+          </Card>
+        ) : (
+          <Card className="border-status-error/30">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-text-primary">Aucune clé API</p>
+                <p className="text-xs text-text-secondary">Créez une clé pour utiliser le widget</p>
+              </div>
+              <Button size="sm" variant="primary" onClick={() => window.location.href = '/api-keys'}>
+                Créer une clé
+              </Button>
+            </div>
+          </Card>
+        )}
       </motion.div>
 
       <motion.div variants={item} className="grid gap-6 lg:grid-cols-2">

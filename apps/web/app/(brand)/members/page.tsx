@@ -39,8 +39,8 @@ export default function MembersPage() {
     },
   })
 
-  // Derive brandId from first member's brand_id
-  const brandId: string | null = (members && members.length > 0 && members[0]) ? members[0].brand_id : null
+  // Derive brandId from any member's brand_id (all share the same)
+  const brandId: string | null = members?.[0]?.brand_id ?? null
 
   const inviteMutation = useMutation({
     mutationFn: async (email: string) => {

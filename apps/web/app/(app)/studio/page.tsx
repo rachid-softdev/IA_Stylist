@@ -58,9 +58,9 @@ export default function StudioPage() {
     image_url: string
     name?: string
     category: GarmentCategory
-  }) => {
+  } | null) => {
     setSelectedGarment(garment)
-    if (garment.category) {
+    if (garment?.category) {
       setCategory(garment.category)
     }
   }, [setSelectedGarment, setCategory])
@@ -292,7 +292,7 @@ export default function StudioPage() {
               />
               {isReady && (
                 <kbd className="hidden font-mono text-2xs text-text-tertiary md:inline-block">
-                  ⌘⏎ pour générer
+                  ⌘⏎ / Ctrl+⏎ pour générer
                 </kbd>
               )}
             </motion.div>

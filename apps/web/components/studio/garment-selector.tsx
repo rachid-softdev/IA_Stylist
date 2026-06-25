@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { useUpload } from '@/hooks/use-upload'
 import { useToastStore } from '@/stores/toast-store'
-import { Upload, Package } from 'lucide-react'
+import { Upload } from 'lucide-react'
 import type { GarmentCategory } from '@vfs/shared-types'
 
 interface GarmentSelectorProps {
@@ -18,7 +18,7 @@ interface GarmentSelectorProps {
     image_url: string
     name?: string
     category: GarmentCategory
-  }) => void
+  } | null) => void
 }
 
 export function GarmentSelector({ selected, onSelect }: GarmentSelectorProps) {
@@ -80,7 +80,7 @@ export function GarmentSelector({ selected, onSelect }: GarmentSelectorProps) {
           </div>
           <button
             onClick={() => {
-              onSelect(null as never)
+              onSelect(null)
               setUploadPreview(null)
               setShowUpload(false)
             }}
@@ -134,25 +134,13 @@ export function GarmentSelector({ selected, onSelect }: GarmentSelectorProps) {
           </button>
         </div>
       ) : (
-        <div className="flex gap-3">
-          <button
-            onClick={() => setShowUpload(true)}
-            className="flex flex-1 items-center justify-center gap-3 rounded-lg border border-dashed border-border-default p-6 text-center transition-all hover:border-accent-primary hover:bg-bg-overlay"
-          >
-            <Upload className="h-5 w-5 text-text-tertiary" />
-            <span className="text-sm text-text-secondary">Uploader un vêtement</span>
-          </button>
-          <button
-            onClick={() => {
-              // TODO: Open catalog browser
-              addToast({ type: 'info', title: 'Catalogue', message: 'Fonctionnalité à venir' })
-            }}
-            className="flex flex-1 items-center justify-center gap-3 rounded-lg border border-dashed border-border-default p-6 text-center transition-all hover:border-accent-primary hover:bg-bg-overlay"
-          >
-            <Package className="h-5 w-5 text-text-tertiary" />
-            <span className="text-sm text-text-secondary">Parcourir le catalogue</span>
-          </button>
-        </div>
+        <button
+          onClick={() => setShowUpload(true)}
+          className="flex w-full items-center justify-center gap-3 rounded-lg border border-dashed border-border-default p-6 text-center transition-all hover:border-accent-primary hover:bg-bg-overlay"
+        >
+          <Upload className="h-5 w-5 text-text-tertiary" />
+          <span className="text-sm text-text-secondary">Uploader un vêtement</span>
+        </button>
       )}
     </div>
   )
