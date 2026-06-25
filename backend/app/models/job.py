@@ -31,6 +31,9 @@ class GenerationJob(BaseModel):
     ai_provider: Mapped[Optional[str]] = mapped_column(String(50), nullable=True)
     duration_ms: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
     completed_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
+    celery_task_id: Mapped[Optional[str]] = mapped_column(
+        String(255), nullable=True, index=True
+    )
 
     user: Mapped["User"] = relationship(
         "User", back_populates="jobs", foreign_keys=[user_id]

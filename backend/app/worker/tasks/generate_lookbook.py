@@ -7,10 +7,14 @@ def generate_lookbook(self, job_id: str):
     """Generate a batch lookbook for a collection of garments."""
 
     async def _run():
-        from app.worker.tasks.generate_image import _update_job_status, AsyncSessionLocal, GenerationJob, select
+        from app.worker.tasks.generate_image import _update_job_status, _is_cancelled, AsyncSessionLocal, GenerationJob, select
         from app.services.websocket import push_job_update
 
         await _update_job_status(job_id, "processing")
+
+        # Cooperative cancellation check
+        if await _is_cancelled(job_id):
+            return
 
         async with AsyncSessionLocal() as db:
             result = await db.execute(select(GenerationJob).where(GenerationJob.id == job_id))

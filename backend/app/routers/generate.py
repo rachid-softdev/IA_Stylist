@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, status, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, desc, func
 from typing import Optional
+from datetime import datetime, timezone
 
 from app.dependencies import get_current_user, get_current_brand_admin
 from app.db.session import get_db
@@ -77,11 +78,15 @@ async def create_try_on(
     # Enqueue Celery task
     from app.worker.celery_app import celery_app
 
-    celery_app.send_task(
+    task = celery_app.send_task(
         "app.worker.tasks.generate_image.generate_tryon_image",
         args=[job.id],
         queue="default",
     )
+
+    # Store Celery task ID for cancel support
+    job.celery_task_id = task.id
+    await db.commit()
 
     await push_job_update(user.id, job.id, "queued")
 
@@ -182,11 +187,14 @@ async def create_video(
 
     from app.worker.celery_app import celery_app
 
-    celery_app.send_task(
+    task = celery_app.send_task(
         "app.worker.tasks.generate_video.generate_video",
         args=[job.id],
         queue="high",
     )
+
+    job.celery_task_id = task.id
+    await db.commit()
 
     return JobCreateResponse(job_id=job.id)
 
@@ -232,10 +240,70 @@ async def create_lookbook(
 
     from app.worker.celery_app import celery_app
 
-    celery_app.send_task(
+    task = celery_app.send_task(
         "app.worker.tasks.generate_lookbook.generate_lookbook",
         args=[job.id],
         queue="low",
     )
 
+    job.celery_task_id = task.id
+    await db.commit()
+
     return JobCreateResponse(job_id=job.id)
+
+
+@router.post("/jobs/{job_id}/cancel")
+async def cancel_job(
+    job_id: str,
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Cancel a generation job. Refunds credits if job hasn't completed."""
+    result = await db.execute(
+        select(GenerationJob).where(
+            GenerationJob.id == job_id,
+            GenerationJob.user_id == user.id,
+        )
+    )
+    job = result.scalar_one_or_none()
+
+    if not job:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail={"code": "JOB_NOT_FOUND", "message": "Job not found"},
+        )
+
+    if job.status not in ("queued", "processing"):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail={
+                "code": "JOB_NOT_CANCELLABLE",
+                "message": f"Cannot cancel job in status '{job.status}'",
+            },
+        )
+
+    # Revoke Celery task if we have the task ID
+    if job.celery_task_id:
+        from app.worker.celery_app import celery_app
+
+        celery_app.control.revoke(job.celery_task_id, terminate=True)
+
+    # Update job status
+    job.status = "cancelled"
+    job.completed_at = datetime.now(timezone.utc)
+    await db.commit()
+
+    # Refund credits
+    credit_service = CreditService(db)
+    await credit_service.refund(
+        user.id,
+        job.credits_used,
+        "refund",
+        job.id,
+        f"Cancelled {job.job_type} job",
+    )
+
+    # Push WebSocket update
+    await push_job_update(user.id, job.id, "cancelled")
+
+    return {"status": "cancelled", "job_id": job.id}

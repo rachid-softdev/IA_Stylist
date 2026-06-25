@@ -35,12 +35,24 @@ async def _update_job_status(job_id: str, status: str, error_message: str | None
             )
 
 
+async def _is_cancelled(job_id: str) -> bool:
+    """Check if a job has been cancelled (for cooperative cancellation)."""
+    async with AsyncSessionLocal() as db:
+        result = await db.execute(select(GenerationJob).where(GenerationJob.id == job_id))
+        job = result.scalar_one_or_none()
+        return job is not None and job.status == "cancelled"
+
+
 @celery_app.task(bind=True, max_retries=2, default_retry_delay=30)
 def generate_tryon_image(self, job_id: str):
     """Generate a try-on image using AI services."""
 
     async def _run():
         await _update_job_status(job_id, "processing")
+
+        # Cooperative cancellation check
+        if await _is_cancelled(job_id):
+            return
 
         try:
             async with AsyncSessionLocal() as db:
