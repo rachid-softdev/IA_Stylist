@@ -7,6 +7,7 @@ from app.dependencies import verify_brand_admin_access
 from app.db.session import get_db
 from app.models.job import GenerationJob
 from app.models.garment import Garment
+from app.services.conversion import get_conversion_data
 
 router = APIRouter()
 
@@ -93,20 +94,30 @@ async def get_overview(
     )
     total_all = total_all_result.scalar() or 0
 
-    returns_saved = max(0, int(total_all * 0.25))
-    cost_savings = total_all * 150.0
+    # Try to get real conversion data
+    real_data, is_estimate = await get_conversion_data(db, brand_id, days=days)
+    if real_data:
+        orders = real_data["orders"]
+        returns = real_data["returns"]
+        conversion_rate = round(min((orders / max(total_tryons, 1)) * 100, 100), 1)
+        returns_saved = max(0, int(orders - returns))
+        cost_savings = float(returns * 150)
+    else:
+        conversion_rate = 0.0
+        returns_saved = max(0, int(total_all * 0.25))
+        cost_savings = total_all * 150.0
 
     return {
         "data": {
             "total_tryons": total_tryons,
             "tryons_delta": round(tryons_delta, 1),
-            "conversion_rate": 0.0,
+            "conversion_rate": conversion_rate,
             "conversion_delta": 0.0,
             "returns_saved": returns_saved,
             "returns_delta": 0.0,
             "cost_savings": cost_savings,
             "savings_delta": 0.0,
-            "is_estimate": True,
+            "is_estimate": is_estimate,
         },
         "time_series": time_series,
         "top_skus": top_skus,

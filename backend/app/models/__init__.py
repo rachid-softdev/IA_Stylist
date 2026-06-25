@@ -6,6 +6,7 @@ from app.models.credit import CreditTransaction
 from app.models.collection import Collection, CollectionItem
 from app.models.api_key import ApiKey
 from app.models.processed_event import ProcessedEvent
+from app.models.conversion import ShopifyConversion
 
 __all__ = [
     "User",
@@ -18,4 +19,5 @@ __all__ = [
     "CollectionItem",
     "ApiKey",
     "ProcessedEvent",
+    "ShopifyConversion",
 ]

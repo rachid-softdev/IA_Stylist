@@ -13,6 +13,7 @@ from app.models.brand import Brand, BrandMember
 from app.models.api_key import ApiKey
 from app.models.job import GenerationJob
 from app.services.security import generate_api_key, extract_key_prefix, extract_key_last4
+from app.services.conversion import get_conversion_data
 from app.schemas.common import (
     BrandResponse,
     BrandMeResponse,
@@ -178,21 +179,36 @@ async def get_dashboard(
         pct = round(((current - previous) / previous) * 100)
         return f"+{pct}%" if pct >= 0 else f"{pct}%"
 
+    # Try to get real conversion data
+    real_data, is_estimate = await get_conversion_data(db, brand.id, days=30)
+    if real_data:
+        orders = real_data["orders"]
+        returns = real_data["returns"]
+        # Conversion rate = orders / tryons (capped at 100%)
+        conversion_rate = round(min((orders / max(current_tryons, 1)) * 100, 100), 1)
+        returns_prevented = max(0, orders - returns)
+        savings = returns * 150  # 150€ saved per prevented return
+    else:
+        conversion_rate = 0.0
+        returns_prevented = round(current_tryons * 0.25)
+        savings = current_tryons * 150
+
     return {
         "metrics": {
             "tryons": current_tryons,
-            "conversion": 0,
-            "returns_prevented": round(current_tryons * 0.25),
-            "savings": current_tryons * 150,
+            "conversion": conversion_rate,
+            "returns_prevented": returns_prevented,
+            "savings": savings,
         },
         "deltas": {
             "tryons": delta_str(current_tryons, prev_tryons),
             "conversion": "0%",
             "returns": "0%",
-            "savings": delta_str(current_tryons * 150, prev_tryons * 150),
+            "savings": delta_str(savings, prev_tryons * 150),
         },
         "tryon_history": tryon_history,
         "top_skus": top_skus,
+        "is_estimate": is_estimate,
     }
 
 
