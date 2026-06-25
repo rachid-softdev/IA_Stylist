@@ -3,7 +3,8 @@
 import { useState } from 'react'
 import { useUpload } from '@/hooks/use-upload'
 import { useToastStore } from '@/stores/toast-store'
-import { Upload } from 'lucide-react'
+import { Upload, Package } from 'lucide-react'
+import { CatalogBrowser } from './catalog-browser'
 import type { GarmentCategory } from '@vfs/shared-types'
 
 interface GarmentSelectorProps {
@@ -25,6 +26,7 @@ export function GarmentSelector({ selected, onSelect }: GarmentSelectorProps) {
   const { addToast } = useToastStore()
   const [showUpload, setShowUpload] = useState(false)
   const [uploadPreview, setUploadPreview] = useState<string | null>(null)
+  const [showCatalog, setShowCatalog] = useState(false)
 
   const categoryOptions: { value: GarmentCategory; label: string }[] = [
     { value: 'top', label: 'Haut' },
@@ -134,14 +136,32 @@ export function GarmentSelector({ selected, onSelect }: GarmentSelectorProps) {
           </button>
         </div>
       ) : (
-        <button
-          onClick={() => setShowUpload(true)}
-          className="flex w-full items-center justify-center gap-3 rounded-lg border border-dashed border-border-default p-6 text-center transition-all hover:border-accent-primary hover:bg-bg-overlay"
-        >
-          <Upload className="h-5 w-5 text-text-tertiary" />
-          <span className="text-sm text-text-secondary">Uploader un vêtement</span>
-        </button>
+        <div className="flex gap-3">
+          <button
+            onClick={() => setShowUpload(true)}
+            className="flex flex-1 items-center justify-center gap-3 rounded-lg border border-dashed border-border-default p-6 text-center transition-all hover:border-accent-primary hover:bg-bg-overlay"
+          >
+            <Upload className="h-5 w-5 text-text-tertiary" />
+            <span className="text-sm text-text-secondary">Uploader</span>
+          </button>
+          <button
+            onClick={() => setShowCatalog(true)}
+            className="flex flex-1 items-center justify-center gap-3 rounded-lg border border-dashed border-border-default p-6 text-center transition-all hover:border-accent-primary hover:bg-bg-overlay"
+          >
+            <Package className="h-5 w-5 text-text-tertiary" />
+            <span className="text-sm text-text-secondary">Catalogue</span>
+          </button>
+        </div>
       )}
+
+      <CatalogBrowser
+        open={showCatalog}
+        onClose={() => setShowCatalog(false)}
+        onSelect={(garment) => {
+          onSelect(garment)
+          setShowCatalog(false)
+        }}
+      />
     </div>
   )
 }
