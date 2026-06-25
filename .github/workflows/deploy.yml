@@ -1,0 +1,95 @@
+name: Deploy
+
+on:
+  push:
+    tags:
+      - "v*"
+
+env:
+  PNPM_VERSION: "9"
+
+jobs:
+  # ── Job 1: Build & publish widget SDK to CDN ──
+  publish-widget:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile --filter @vfs/widget-sdk
+
+      - name: Build widget SDK
+        run: pnpm --filter @vfs/widget-sdk build
+
+      - name: Upload widget.js to R2 CDN
+        uses: shallwefootball/s3-upload-action@v1
+        with:
+          aws_key_id: ${{ secrets.R2_ACCESS_KEY }}
+          aws_secret_access_key: ${{ secrets.R2_SECRET_KEY }}
+          aws_bucket: ${{ secrets.R2_BUCKET }}
+          source_dir: packages/widget-sdk/dist
+          destination_dir: ""
+          endpoint_url: ${{ secrets.R2_ENDPOINT }}
+
+  # ── Job 2: Backend migrations & deploy ──
+  deploy-backend:
+    needs: [publish-widget]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Run database migrations
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: |
+          pip install -r backend/requirements.txt
+          cd backend && alembic upgrade head
+
+      - name: Deploy to Railway
+        uses: railwayapp/action@v1
+        with:
+          service: vfs-api
+          token: ${{ secrets.RAILWAY_TOKEN }}
+
+  # ── Job 3: Frontend deploy ──
+  deploy-frontend:
+    needs: [publish-widget]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build all workspaces
+        run: pnpm build
+
+      - name: Deploy to Vercel
+        uses: vercel/action@v1
+        with:
+          vercel-token: ${{ secrets.VERCEL_TOKEN }}
+          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
+          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
+          vercel-args: "--prod"

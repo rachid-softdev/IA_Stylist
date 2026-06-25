@@ -15,6 +15,7 @@ from app.models.garment import Garment
 from app.models.job import GenerationJob
 from app.services.security import hash_api_key, verify_api_key
 from app.services.websocket import push_job_update
+from app.services.widget_jwt import create_widget_token, get_widget_brand_id
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
@@ -62,40 +63,22 @@ async def widget_auth(
             detail={"code": "INVALID_API_KEY", "message": "Invalid or expired API key"},
         )
 
-    return {
-        "data": {
-            "authenticated": True,
-            "brand_id": matched_key.brand_id,
-        }
-    }
+    # Return a short-lived JWT instead of raw brand_id
+    token_data = create_widget_token(matched_key.brand_id)
+    return {"data": token_data}
 
 
 @router.post("/generate")
 async def widget_generate(
     file: UploadFile = File(...),
-    api_key: str = Form(...),
     product_id: str = Form(...),
     sku: str = Form(...),
     db: AsyncSession = Depends(get_db),
+    brand_id: str = Depends(get_widget_brand_id),
 ):
-    """Generate a try-on from the widget."""
-    # Verify API key
-    result = await db.execute(
-        select(ApiKey).where(ApiKey.is_active == True)
-    )
-    keys = result.scalars().all()
-    matched_key = None
-    for key in keys:
-        if verify_api_key(api_key, key.key_hash):
-            matched_key = key
-            break
+    """Generate a try-on from the widget. Requires JWT from /auth."""
 
-    if not matched_key:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED)
-
-    brand_id = matched_key.brand_id
-
-    # Find garment by SKU
+    # Find garment by SKU for this brand
     result = await db.execute(
         select(Garment).where(
             Garment.brand_id == brand_id,
