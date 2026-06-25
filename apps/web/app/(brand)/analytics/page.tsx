@@ -1,13 +1,14 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useCallback } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { motion } from 'framer-motion'
 import { api } from '@/lib/api'
 import { Card } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
 import { AnimatedNumber } from '@/components/ui/animated-number'
-import { TrendingUp, Package, RefreshCw, DollarSign } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import { TrendingUp, Package, RefreshCw, DollarSign, Download } from 'lucide-react'
 
 const container = {
   hidden: { opacity: 0 },
@@ -58,16 +59,45 @@ const RANGE_OPTIONS = [
 export default function AnalyticsPage() {
   const [days, setDays] = useState(30)
 
-  const { data, isLoading } = useQuery({
-    queryKey: ['analytics', days],
+  // Fetch brand info to get real brand ID
+  const { data: brandInfo } = useQuery({
+    queryKey: ['brand-me'],
     queryFn: async () => {
-      const res = await api.get<AnalyticsResponse>(`/analytics/brand-id/overview?days=${days}`)
+      const res = await api.get<{ id: string }>('/brands/me')
       return res.data
     },
+    staleTime: 1000 * 60 * 10,
+  })
+
+  const brandId = brandInfo?.id
+
+  const { data, isLoading } = useQuery({
+    queryKey: ['analytics', brandId, days],
+    queryFn: async () => {
+      if (!brandId) throw new Error('Brand not loaded')
+      const res = await api.get<AnalyticsResponse>(`/analytics/${brandId}/overview?days=${days}`)
+      return res.data
+    },
+    enabled: !!brandId,
   })
 
   const overview = data?.data
   const maxCount = Math.max(...(data?.time_series?.map(t => t.count) || [1]), 1)
+
+  // CSV export
+  const handleExportCSV = useCallback(() => {
+    if (!data) return
+    const headers = ['Date,Try-ons']
+    const rows = (data.time_series || []).map((t) => `${t.date},${t.count}`)
+    const csv = [...headers, ...rows].join('\n')
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `analytics-${days}j.csv`
+    a.click()
+    URL.revokeObjectURL(url)
+  }, [data, days])
 
   return (
     <motion.div
@@ -81,20 +111,25 @@ export default function AnalyticsPage() {
           <h1 className="font-display text-3xl tracking-tight text-text-primary">Analytics</h1>
           <p className="mt-1 text-text-secondary">Analysez les performances de vos try-ons</p>
         </div>
-        <div className="flex gap-2">
-          {RANGE_OPTIONS.map(opt => (
-            <button
-              key={opt.value}
-              onClick={() => setDays(opt.value)}
-              className={`rounded-md px-3 py-1.5 text-xs font-medium transition-colors ${
-                days === opt.value
-                  ? 'bg-accent-primary text-text-inverse'
-                  : 'bg-bg-elevated text-text-secondary hover:text-text-primary'
-              }`}
-            >
-              {opt.label}
-            </button>
-          ))}
+        <div className="flex items-center gap-3">
+          <div className="flex gap-1 rounded-lg border border-border-default bg-bg-surface p-1">
+            {RANGE_OPTIONS.map(opt => (
+              <button
+                key={opt.value}
+                onClick={() => setDays(opt.value)}
+                className={`rounded-md px-3 py-1.5 text-xs font-medium transition-colors ${
+                  days === opt.value
+                    ? 'bg-accent-primary text-text-inverse shadow-sm'
+                    : 'text-text-secondary hover:text-text-primary'
+                }`}
+              >
+                {opt.label}
+              </button>
+            ))}
+          </div>
+          <Button variant="secondary" size="sm" iconLeft={<Download className="h-3.5 w-3.5" />} onClick={handleExportCSV} disabled={!data}>
+            Exporter CSV
+          </Button>
         </div>
       </motion.div>
 

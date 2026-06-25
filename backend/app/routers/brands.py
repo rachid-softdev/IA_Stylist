@@ -4,7 +4,7 @@ from typing import Optional
 from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel, Field
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, func
+from sqlalchemy import select, func, cast, Date
 
 from app.dependencies import get_current_user, get_current_brand_admin, get_current_brand_admin_me
 from app.db.session import get_db
@@ -89,6 +89,110 @@ async def get_my_brand(
         "last_generation_at": last_job,
         "credits_usage_pct": max(0, min(100, credits_usage_pct)),
         "monthly_credits": monthly_credits,
+    }
+
+
+@router.get("/me/dashboard")
+async def get_dashboard(
+    user_brand: tuple[User, Brand] = Depends(get_current_brand_admin_me),
+    db: AsyncSession = Depends(get_db),
+):
+    """Get brand dashboard data (KPIs, charts, top SKUs)."""
+    brand = user_brand[1]
+    thirty_days_ago = datetime.utcnow() - timedelta(days=30)
+    sixty_days_ago = datetime.utcnow() - timedelta(days=60)
+
+    # Current period try-ons
+    current_result = await db.execute(
+        select(func.count(GenerationJob.id)).where(
+            GenerationJob.brand_id == brand.id,
+            GenerationJob.job_type == "image",
+            GenerationJob.created_at >= thirty_days_ago,
+        )
+    )
+    current_tryons = current_result.scalar() or 0
+
+    # Previous period try-ons
+    prev_result = await db.execute(
+        select(func.count(GenerationJob.id)).where(
+            GenerationJob.brand_id == brand.id,
+            GenerationJob.job_type == "image",
+            GenerationJob.created_at >= sixty_days_ago,
+            GenerationJob.created_at < thirty_days_ago,
+        )
+    )
+    prev_tryons = prev_result.scalar() or 0
+
+    # Try-on history (daily counts for chart)
+    history_result = await db.execute(
+        select(
+            cast(GenerationJob.created_at, Date).label("date"),
+            func.count(GenerationJob.id).label("count"),
+        ).where(
+            GenerationJob.brand_id == brand.id,
+            GenerationJob.job_type == "image",
+            GenerationJob.created_at >= thirty_days_ago,
+        ).group_by(cast(GenerationJob.created_at, Date))
+        .order_by(cast(GenerationJob.created_at, Date))
+    )
+    tryon_history = [
+        {"date": str(row.date), "count": row.count}
+        for row in history_result.all()
+    ]
+
+    # Top SKUs
+    top_result = await db.execute(
+        select(
+            GenerationJob.garment_id,
+            func.count(GenerationJob.id).label("tryons"),
+        ).where(
+            GenerationJob.brand_id == brand.id,
+            GenerationJob.job_type == "image",
+            GenerationJob.garment_id.isnot(None),
+            GenerationJob.created_at >= thirty_days_ago,
+        ).group_by(GenerationJob.garment_id)
+        .order_by(func.count(GenerationJob.id).desc())
+        .limit(10)
+    )
+    top_garment_ids = {row.garment_id: row.tryons for row in top_result.all()}
+
+    # Get garment names
+    top_skus = []
+    if top_garment_ids:
+        from app.models.garment import Garment
+        garment_result = await db.execute(
+            select(Garment).where(Garment.id.in_(list(top_garment_ids.keys())))
+        )
+        garments = garment_result.scalars().all()
+        for g in garments:
+            top_skus.append({
+                "sku": g.sku or g.id[:8],
+                "name": g.name or g.sku or "Unknown",
+                "tryons": top_garment_ids[g.id],
+            })
+
+    # Calculate deltas
+    def delta_str(current: int, previous: int) -> str:
+        if previous == 0:
+            return "+100%" if current > 0 else "0%"
+        pct = round(((current - previous) / previous) * 100)
+        return f"+{pct}%" if pct >= 0 else f"{pct}%"
+
+    return {
+        "metrics": {
+            "tryons": current_tryons,
+            "conversion": 0,
+            "returns_prevented": round(current_tryons * 0.25),
+            "savings": current_tryons * 150,
+        },
+        "deltas": {
+            "tryons": delta_str(current_tryons, prev_tryons),
+            "conversion": "0%",
+            "returns": "0%",
+            "savings": delta_str(current_tryons * 150, prev_tryons * 150),
+        },
+        "tryon_history": tryon_history,
+        "top_skus": top_skus,
     }
 
 
