@@ -109,6 +109,12 @@ export default function StylistPage() {
             <p className="text-sm text-text-secondary">
               Générez votre premier look pour obtenir des recommandations personnalisées
             </p>
+            <button
+              onClick={() => window.location.href = '/studio'}
+              className="mt-4 text-sm text-accent-primary hover:underline"
+            >
+              Aller au Studio
+            </button>
           </div>
         )}
       </motion.div>
@@ -122,6 +128,12 @@ export default function StylistPage() {
           <p className="text-sm text-text-secondary">
             Complétez votre dressing pour débloquer les suggestions d&apos;outfits
           </p>
+          <button
+            onClick={() => window.location.href = '/dressing'}
+            className="mt-4 text-sm text-accent-primary hover:underline"
+          >
+            Ajouter des vêtements
+          </button>
         </div>
       </motion.div>
 
