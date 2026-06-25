@@ -110,7 +110,7 @@ export default function AnalyticsPage() {
         ) : (
           <div className="space-y-4">
             {/* Hero metric */}
-            <Card hover className="lg:col-span-2">
+            <Card hover>
               <div className="flex items-start justify-between">
                 <div>
                   <p className="text-xs text-text-tertiary uppercase tracking-widest">Try-ons</p>
