@@ -1,19 +1,20 @@
 {
+  "extends": "../../tsconfig.base.json",
   "compilerOptions": {
-    "target": "ESNext",
-    "module": "ESNext",
-    "moduleResolution": "bundler",
+    "lib": ["dom", "esnext"],
     "jsx": "react-jsx",
-    "strict": true,
-    "esModuleInterop": true,
-    "skipLibCheck": true,
-    "resolveJsonModule": true,
+    "noEmit": true,
     "paths": {
       "@/*": ["./*"],
       "@vfs/shared-types": ["../../packages/shared-types/src"],
       "@vfs/utils": ["../../packages/utils/src"]
     }
   },
-  "include": ["**/*.ts", "**/*.tsx", "../../packages/shared-types/src/**/*.ts", "../../packages/utils/src/**/*.ts"],
+  "include": [
+    "**/*.ts",
+    "**/*.tsx",
+    "../../packages/shared-types/src/**/*.ts",
+    "../../packages/utils/src/**/*.ts"
+  ],
   "exclude": ["node_modules"]
 }

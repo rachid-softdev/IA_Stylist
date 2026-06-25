@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { cn } from '@vfs/utils'
-import { Camera, Clapperboard, Sparkles, User } from 'lucide-react'
+import { Camera, Clapperboard, Sparkles } from 'lucide-react'
 
 const navItems = [
   { href: '/studio', label: 'Studio', icon: Camera },

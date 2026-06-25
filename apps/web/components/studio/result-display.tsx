@@ -11,7 +11,7 @@ interface ResultDisplayProps {
   jobId: string | null
 }
 
-export function ResultDisplay({ imageUrl, metadata, onTryAgain, jobId }: ResultDisplayProps) {
+export function ResultDisplay({ imageUrl, metadata: _metadata, onTryAgain, jobId }: ResultDisplayProps) {
   const { addToast } = useToastStore()
 
   const handleDownload = async () => {

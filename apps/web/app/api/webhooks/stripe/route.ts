@@ -14,7 +14,7 @@ export async function POST(request: NextRequest) {
   const signature = request.headers.get('stripe-signature') || ''
 
   try {
-    const event = getStripe().webhooks.constructEvent(body, signature, webhookSecret)
+    getStripe().webhooks.constructEvent(body, signature, webhookSecret)
 
     // Forward to backend
     await fetch(`${process.env.NEXT_PUBLIC_API_URL}/v1/webhooks/stripe`, {

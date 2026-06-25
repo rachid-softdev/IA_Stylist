@@ -1,7 +1,5 @@
 (() => {
-  const VERSION = '1.0.0'
   const API_URL = 'https://api.vfs.ai/v1'
-  const STORAGE_KEY = 'vfs_widget_session'
 
   interface WidgetConfig {
     apiKey: string
@@ -10,17 +8,11 @@
     variantId?: string
   }
 
-  interface SessionData {
-    emailHash: string
-    profileUrl?: string
-  }
-
   let config: WidgetConfig | null = null
   let modal: HTMLDivElement | null = null
   let isOpen = false
 
   function getTheme() {
-    const styles = getComputedStyle(document.body)
     return {
       primary: getMetaContent('vfs-primary') || '#6366f1',
       font: getMetaContent('vfs-font') || 'inherit',
@@ -31,23 +23,6 @@
   function getMetaContent(name: string): string | null {
     const el = document.querySelector(`meta[name="${name}"]`)
     return el?.getAttribute('content') || null
-  }
-
-  function getSession(): SessionData | null {
-    try {
-      const raw = localStorage.getItem(STORAGE_KEY)
-      return raw ? JSON.parse(raw) : null
-    } catch {
-      return null
-    }
-  }
-
-  function setSession(data: SessionData) {
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(data))
-    } catch {
-      // localStorage not available
-    }
   }
 
   function createButton(theme: ReturnType<typeof getTheme>): HTMLButtonElement {
