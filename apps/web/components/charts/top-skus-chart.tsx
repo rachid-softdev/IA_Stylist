@@ -24,16 +24,7 @@ interface TopSkusChartProps {
   error?: string | null
 }
 
-const fallbackData: TopSku[] = [
-  { sku: 'VFS-001', name: 'Robe été', tryons: 89 },
-  { sku: 'VFS-002', name: 'Blazer noir', tryons: 72 },
-  { sku: 'VFS-003', name: 'Jean slim', tryons: 58 },
-  { sku: 'VFS-004', name: 'Pull cachemire', tryons: 45 },
-  { sku: 'VFS-005', name: 'Veste cuir', tryons: 34 },
-]
-
 export function TopSkusChart({ data, loading, error }: TopSkusChartProps) {
-  const chartData = data ?? fallbackData
 
   const colors = useMemo(() => {
     if (typeof window === 'undefined') {
@@ -81,7 +72,7 @@ export function TopSkusChart({ data, loading, error }: TopSkusChartProps) {
     <div className="h-48">
       <ResponsiveContainer width="100%" height="100%">
         <BarChart
-          data={chartData}
+          data={data}
           layout="vertical"
           margin={{ top: 4, right: 8, left: 4, bottom: 0 }}
         >

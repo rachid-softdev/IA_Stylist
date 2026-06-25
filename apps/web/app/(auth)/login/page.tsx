@@ -38,6 +38,10 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false)
   const [emailError, setEmailError] = useState<string | undefined>(undefined)
   const [passwordError, setPasswordError] = useState<string | undefined>(undefined)
+  const [showReset, setShowReset] = useState(false)
+  const [resetEmail, setResetEmail] = useState('')
+  const [resetLoading, setResetLoading] = useState(false)
+  const [resetSent, setResetSent] = useState(false)
   const { addToast } = useToastStore()
 
   const handleEmailChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
@@ -49,6 +53,27 @@ export default function LoginPage() {
     setPassword(e.target.value)
     if (passwordError) setPasswordError(undefined)
   }, [passwordError])
+
+  const handleResetPassword = async (e: React.FormEvent) => {
+    e.preventDefault()
+    const eErr = validateEmail(resetEmail)
+    if (eErr) {
+      addToast({ type: 'error', title: 'Erreur', message: eErr })
+      return
+    }
+
+    setResetLoading(true)
+    try {
+      await api.post('/auth/forgot-password', { email: resetEmail })
+      setResetSent(true)
+      addToast({ type: 'success', title: 'Email envoyé', message: 'Si ce compte existe, un lien de réinitialisation a été envoyé.' })
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Une erreur est survenue'
+      addToast({ type: 'error', title: 'Erreur', message })
+    } finally {
+      setResetLoading(false)
+    }
+  }
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -113,18 +138,58 @@ export default function LoginPage() {
             error={passwordError}
             required
           />
-          <div className="text-right -mt-2">
-            <button
-              type="button"
-              onClick={() => addToast({ type: 'info', title: 'Mot de passe oublié', message: 'La réinitialisation sera disponible prochainement' })}
-              className="text-xs text-accent-primary hover:underline"
-            >
-              Mot de passe oublié ?
-            </button>
-          </div>
-          <Button type="submit" loading={loading} className="w-full" iconRight={<ArrowRight className="h-4 w-4" />}>
-            Se connecter
-          </Button>
+          {showReset ? (
+            <>
+              <Input
+                label="Email"
+                type="email"
+                value={resetEmail}
+                onChange={(e) => setResetEmail(e.target.value)}
+                placeholder="vous@email.com"
+                required
+                disabled={resetSent}
+              />
+              {resetSent ? (
+                <div className="rounded-lg bg-accent-primary/10 p-4 text-center">
+                  <p className="text-sm text-text-primary">Email envoyé !</p>
+                  <p className="mt-1 text-xs text-text-secondary">
+                    Vérifiez votre boîte de réception et suivez le lien pour réinitialiser votre mot de passe.
+                  </p>
+                </div>
+              ) : (
+                <Button
+                  type="button"
+                  loading={resetLoading}
+                  className="w-full"
+                  onClick={handleResetPassword}
+                >
+                  Envoyer le lien
+                </Button>
+              )}
+              <button
+                type="button"
+                onClick={() => { setShowReset(false); setResetSent(false); setResetEmail('') }}
+                className="block w-full text-center text-xs text-text-tertiary hover:text-text-secondary"
+              >
+                Retour à la connexion
+              </button>
+            </>
+          ) : (
+            <>
+              <div className="text-right -mt-2">
+                <button
+                  type="button"
+                  onClick={() => setShowReset(true)}
+                  className="text-xs text-accent-primary hover:underline"
+                >
+                  Mot de passe oublié ?
+                </button>
+              </div>
+              <Button type="submit" loading={loading} className="w-full" iconRight={<ArrowRight className="h-4 w-4" />}>
+                Se connecter
+              </Button>
+            </>
+          )}
         </motion.form>
 
         <motion.div variants={item} className="mt-6 text-center text-sm">

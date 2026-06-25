@@ -40,7 +40,7 @@ const item = {
 
 export default function ApiKeysPage() {
   const [newKey, setNewKey] = useState<NewKeyResponse | null>(null)
-  const [showCreate, setShowCreate] = useState(false)
+  const [creating, setCreating] = useState(false)
   const { addToast } = useToastStore()
   const queryClient = useQueryClient()
 
@@ -52,19 +52,19 @@ export default function ApiKeysPage() {
     },
   })
 
-  const createMutation = useMutation({
-    mutationFn: async () => {
+  const handleCreateKey = async () => {
+    setCreating(true)
+    try {
       const res = await api.post<NewKeyResponse>('/brands/me/api-keys')
-      return res.data
-    },
-    onSuccess: (data) => {
-      setNewKey(data)
+      setNewKey(res.data)
       queryClient.invalidateQueries({ queryKey: ['api-keys'] })
-    },
-    onError: (err: Error) => {
-      addToast({ type: 'error', title: 'Erreur', message: err.message })
-    },
-  })
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Erreur lors de la création'
+      addToast({ type: 'error', title: 'Erreur', message })
+    } finally {
+      setCreating(false)
+    }
+  }
 
   const revokeMutation = useMutation({
     mutationFn: async (keyId: string) => {
@@ -91,7 +91,7 @@ export default function ApiKeysPage() {
           <h1 className="font-display text-3xl tracking-tight text-text-primary">Clés API</h1>
           <p className="mt-1 text-text-secondary">Gérez vos clés d&apos;intégration</p>
         </div>
-        <Button size="sm" iconLeft={<Plus className="h-3.5 w-3.5" />} onClick={() => setShowCreate(true)}>
+        <Button size="sm" loading={creating} iconLeft={<Plus className="h-3.5 w-3.5" />} onClick={handleCreateKey}>
           Créer une clé
         </Button>
       </motion.div>

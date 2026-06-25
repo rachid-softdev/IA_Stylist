@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -11,6 +12,7 @@ import { ThemeToggle } from '@/components/ui/theme-toggle'
 import { useAuthStore } from '@/stores/auth-store'
 import { LogOut, Trash2 } from 'lucide-react'
 import { useToastStore } from '@/stores/toast-store'
+import { api } from '@/lib/api'
 
 const container = {
   hidden: { opacity: 0 },
@@ -24,8 +26,26 @@ const item = {
 
 export default function SettingsPage() {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
+  const [deleting, setDeleting] = useState(false)
   const { user, logout } = useAuthStore()
   const { addToast } = useToastStore()
+  const router = useRouter()
+
+  const handleDeleteAccount = async () => {
+    setDeleting(true)
+    try {
+      await api.delete('/auth/account')
+      addToast({ type: 'success', title: 'Compte supprimé', message: 'Votre compte a été supprimé avec succès.' })
+      logout()
+      router.push('/')
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Une erreur est survenue'
+      addToast({ type: 'error', title: 'Erreur', message })
+    } finally {
+      setDeleting(false)
+      setShowDeleteConfirm(false)
+    }
+  }
 
   return (
     <motion.div
@@ -116,10 +136,8 @@ export default function SettingsPage() {
           <Button
             variant="destructive"
             size="sm"
-            onClick={() => {
-              setShowDeleteConfirm(false)
-              addToast({ type: 'info', title: 'Fonctionnalité à venir', message: 'La suppression de compte sera disponible prochainement. Contactez le support pour toute demande.' })
-            }}
+            loading={deleting}
+            onClick={handleDeleteAccount}
           >
             Supprimer définitivement
           </Button>

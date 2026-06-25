@@ -6,7 +6,6 @@ import { motion } from 'framer-motion'
 import { api } from '@/lib/api'
 import { Card } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
-import { Badge } from '@/components/ui/badge'
 import { AnimatedNumber } from '@/components/ui/animated-number'
 import { TrendingUp, Package, RefreshCw, DollarSign } from 'lucide-react'
 

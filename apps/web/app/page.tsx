@@ -213,6 +213,7 @@ const features = [
 
 function FeaturesSection() {
   const [primary, ...rest] = features
+  if (!primary) return null
 
   return (
     <section id="features" className="py-20 md:py-28" aria-labelledby="features-heading">
