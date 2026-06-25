@@ -7,6 +7,7 @@ import { motion } from 'framer-motion'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { ArrowRight } from 'lucide-react'
+import { api } from '@/lib/api'
 import { useToastStore } from '@/stores/toast-store'
 
 const container = {
@@ -72,10 +73,12 @@ export default function SignupPage() {
     setLoading(true)
 
     try {
+      await api.post('/auth/signup', { email, password })
       addToast({ type: 'success', title: 'Compte créé !', message: 'Bienvenue sur VFS' })
       router.push('/studio')
-    } catch {
-      addToast({ type: 'error', title: 'Erreur', message: 'Inscription impossible' })
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Inscription impossible'
+      addToast({ type: 'error', title: 'Erreur d\'inscription', message })
     } finally {
       setLoading(false)
     }

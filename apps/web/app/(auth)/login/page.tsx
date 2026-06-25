@@ -7,6 +7,7 @@ import { motion } from 'framer-motion'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { ArrowRight } from 'lucide-react'
+import { api } from '@/lib/api'
 import { useToastStore } from '@/stores/toast-store'
 
 const container = {
@@ -62,10 +63,12 @@ export default function LoginPage() {
     setLoading(true)
 
     try {
+      await api.post('/auth/login', { email, password })
       addToast({ type: 'success', title: 'Connecté', message: 'Redirection vers le Studio...' })
       router.push('/studio')
-    } catch {
-      addToast({ type: 'error', title: 'Erreur', message: 'Email ou mot de passe incorrect' })
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Email ou mot de passe incorrect'
+      addToast({ type: 'error', title: 'Erreur de connexion', message })
     } finally {
       setLoading(false)
     }

@@ -128,9 +128,12 @@ export default function MembersPage() {
               ))}
               {(!members || members.length === 0) && (
                 <div className="py-12 text-center">
-                  <Mail className="mx-auto h-8 w-8 text-text-tertiary" />
-                  <p className="mt-3 text-sm text-text-secondary">
-                    Invitez des membres de votre équipe
+                  <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-accent-primary/10 animate-float">
+                    <Mail className="h-5 w-5 text-accent-primary" />
+                  </div>
+                  <p className="font-heading text-sm text-text-primary">Invitez votre équipe</p>
+                  <p className="mt-1 text-xs text-text-secondary">
+                    Ajoutez des membres pour collaborer sur vos campagnes
                   </p>
                 </div>
               )}

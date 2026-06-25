@@ -6,6 +6,7 @@ import { api } from '@/lib/api'
 import { Card } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Badge } from '@/components/ui/badge'
+import { Clock } from 'lucide-react'
 import type { GenerationJob } from '@vfs/shared-types'
 
 const container = {
@@ -49,7 +50,11 @@ export default function HistoryPage() {
         </div>
       ) : jobs.length === 0 ? (
         <motion.div variants={item} className="py-20 text-center">
-          <p className="text-text-secondary">Aucune génération pour le moment</p>
+          <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-accent-primary/10 animate-float">
+            <Clock className="h-6 w-6 text-accent-primary" />
+          </div>
+          <p className="font-heading text-lg text-text-primary">Aucune génération</p>
+          <p className="mt-1 text-sm text-text-secondary">Vos looks générés apparaîtront ici</p>
         </motion.div>
       ) : (
         <motion.div variants={item} className="space-y-3">

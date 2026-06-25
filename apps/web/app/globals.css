@@ -157,6 +157,16 @@ body {
   to   { opacity: 1; transform: translateY(0); }
 }
 
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-4px); }
+}
+
+@keyframes progress-indeterminate {
+  0%   { transform: translateX(-100%); }
+  100% { transform: translateX(400%); }
+}
+
 /* ─────────────── Utilities ──────────────────────────────── */
 .animate-card-in {
   animation: card-in 300ms ease-out;
@@ -164,6 +174,14 @@ body {
 
 .animate-result-reveal {
   animation: result-reveal 600ms ease-out;
+}
+
+.animate-result-reveal img {
+  animation: pulse-glow 2s ease-out 1;
+}
+
+.animate-float {
+  animation: float 3s ease-in-out infinite;
 }
 
 .animate-shimmer {
@@ -191,6 +209,44 @@ body {
 
 .animate-spin-slow {
   animation: spin 0.8s linear infinite;
+}
+
+.animate-progress-indeterminate {
+  animation: progress-indeterminate 1.5s ease-in-out infinite;
+}
+
+/* ─────────────── View Transitions ─────────────────────── */
+/* Styling for View Transitions API — triggered via JS */
+
+::view-transition-old(root) {
+  animation: 350ms ease-out both fade-out;
+}
+
+::view-transition-new(root) {
+  animation: 350ms ease-out both fade-in;
+}
+
+/* Sidebar morphs instead of fading — stays persistent */
+.sidebar-panel {
+  view-transition-name: sidebar;
+}
+
+/* Respect reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation: none;
+  }
+}
+
+@keyframes fade-out {
+  from { opacity: 1; transform: scale(1); }
+  to   { opacity: 0; transform: scale(0.98); }
+}
+
+@keyframes fade-in {
+  from { opacity: 0; transform: scale(1.02); }
+  to   { opacity: 1; transform: scale(1); }
 }
 
 .no-scrollbar::-webkit-scrollbar {

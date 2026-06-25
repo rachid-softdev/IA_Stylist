@@ -109,6 +109,8 @@ export function TryonChart({ data, loading, error }: TryonChartProps) {
             strokeWidth={2}
             dot={{ fill: colors.accent, r: 3, strokeWidth: 0 }}
             activeDot={{ r: 5, fill: colors.accent, strokeWidth: 0 }}
+            animationDuration={800}
+            animationEasing="ease-out"
           />
         </LineChart>
       </ResponsiveContainer>

@@ -9,6 +9,7 @@ import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
 import { TryonChart } from '@/components/charts/tryon-chart'
 import { TopSkusChart } from '@/components/charts/top-skus-chart'
+import { AnimatedNumber } from '@/components/ui/animated-number'
 import {
   BarChart3,
   TrendingUp,
@@ -101,9 +102,11 @@ export default function BrandDashboardPage() {
         ) : !data ? (
           <div className="col-span-full flex items-center justify-center rounded-lg border border-dashed border-border-default py-12 text-center">
             <div>
-              <BarChart3 className="mx-auto h-8 w-8 text-text-tertiary" />
-              <p className="mt-3 text-sm text-text-secondary">
-                Aucune donnée disponible pour le moment
+              <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-accent-primary/10 animate-float">
+                <BarChart3 className="h-6 w-6 text-accent-primary" />
+              </div>
+              <p className="text-sm text-text-secondary">
+                Aucune donnée pour le moment
               </p>
               <p className="mt-1 text-xs text-text-tertiary">
                 Importez vos premiers produits pour voir les statistiques
@@ -148,9 +151,7 @@ export default function BrandDashboardPage() {
                       {kpi.label}
                     </p>
                     <p className="mt-1 truncate font-display text-2xl text-text-primary">
-                      {typeof kpi.value === 'number'
-                        ? kpi.value.toLocaleString('fr-FR')
-                        : kpi.value}
+                      <AnimatedNumber value={kpi.value} />
                     </p>
                     <p
                       className={`mt-0.5 text-xs ${
@@ -227,11 +228,13 @@ export default function BrandDashboardPage() {
             </div>
           ) : (
             <div className="py-12 text-center">
-              <Package className="mx-auto h-8 w-8 text-text-tertiary" />
-              <p className="mt-3 text-sm text-text-secondary">
-                Aucun produit dans votre catalogue
+              <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-accent-primary/10 animate-float">
+                <Package className="h-6 w-6 text-accent-primary" />
+              </div>
+              <p className="font-heading text-sm text-text-primary">
+                Catalogue vide
               </p>
-              <p className="text-xs text-text-tertiary">
+              <p className="mt-1 text-xs text-text-secondary">
                 Ajoutez vos premiers vêtements pour commencer
               </p>
             </div>

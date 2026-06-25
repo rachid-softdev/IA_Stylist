@@ -6,6 +6,8 @@ import { motion } from 'framer-motion'
 import { api } from '@/lib/api'
 import { Card } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
+import { Badge } from '@/components/ui/badge'
+import { AnimatedNumber } from '@/components/ui/animated-number'
 import { TrendingUp, Package, RefreshCw, DollarSign } from 'lucide-react'
 
 const container = {
@@ -112,7 +114,7 @@ export default function AnalyticsPage() {
               <div className="flex items-start justify-between">
                 <div>
                   <p className="text-xs text-text-tertiary uppercase tracking-widest">Try-ons</p>
-                  <p className="mt-1 font-display text-2xl text-text-primary">{overview?.total_tryons || 0}</p>
+                  <p className="mt-1 font-display text-2xl text-text-primary"><AnimatedNumber value={overview?.total_tryons || 0} /></p>
                   <p className={`mt-0.5 text-xs ${(overview?.tryons_delta || 0) >= 0 ? 'text-gen-done' : 'text-status-error'}`}>
                     {overview?.tryons_delta || 0}% vs période préc.
                   </p>
@@ -134,7 +136,7 @@ export default function AnalyticsPage() {
               <div className="flex items-start justify-between">
                 <div>
                   <p className="text-xs text-text-tertiary uppercase tracking-widest">Retours évités</p>
-                  <p className="mt-1 font-display text-2xl text-text-primary">{overview?.returns_saved || 0}</p>
+                  <p className="mt-1 font-display text-2xl text-text-primary"><AnimatedNumber value={overview?.returns_saved || 0} /></p>
                   <p className="mt-0.5 text-xs text-gen-done">Estimé (-25%)</p>
                 </div>
                 <RefreshCw className="h-5 w-5 text-text-tertiary" />
@@ -164,25 +166,34 @@ export default function AnalyticsPage() {
             <Skeleton className="h-48 w-full" />
           ) : (
                 <div className="flex h-48 items-end gap-1" role="img" aria-label="Graphique des try-ons par jour">
-              {(data?.time_series || []).map((point) => {
+              {(data?.time_series || []).map((point, idx) => {
                 const formattedDate = new Date(point.date).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' })
+                const heightPct = maxCount > 0 ? (point.count / maxCount) * 100 : 0
                 return (
-                  <div
+                  <motion.div
                     key={point.date}
-                    className="flex-1 rounded-t bg-accent-primary/30 hover:bg-accent-primary/50 transition-colors relative group"
-                    style={{ height: `${(point.count / maxCount) * 100}%` }}
+                    className="flex-1 rounded-t bg-accent-primary/30 hover:bg-accent-primary/50 transition-colors relative group origin-bottom"
+                    initial={{ height: 0 }}
+                    animate={{ height: `${heightPct}%` }}
+                    transition={{
+                      type: 'spring',
+                      stiffness: 120,
+                      damping: 14,
+                      mass: 0.8,
+                      delay: idx * 0.03,
+                    }}
                     role="graphics-symbol"
                     aria-label={`${formattedDate}: ${point.count} try-ons`}
                   >
                     <div className="absolute -top-8 left-1/2 -translate-x-1/2 hidden group-hover:block text-2xs text-text-secondary whitespace-nowrap bg-bg-surface px-1.5 py-0.5 rounded">
                       {formattedDate} — {point.count}
                     </div>
-                  </div>
+                  </motion.div>
                 )
               })}
               {(!data?.time_series || data.time_series.length === 0) && (
-                <div className="flex h-full w-full items-center justify-center text-sm text-text-tertiary">
-                  Aucune donnée
+                <div className="flex h-full w-full items-center justify-center">
+                  <span className="text-sm text-text-tertiary animate-float inline-block">Aucune donnée cette semaine</span>
                 </div>
               )}
             </div>
@@ -213,7 +224,7 @@ export default function AnalyticsPage() {
                 )
               })}
               {(!data?.top_skus || data.top_skus.length === 0) && (
-                <div className="flex h-full items-center justify-center text-sm text-text-tertiary">
+                <div className="flex h-full items-center justify-center text-sm text-text-tertiary animate-float">
                   Essayez des vêtements pour voir les données
                 </div>
               )}

@@ -2,7 +2,7 @@
 
 import { motion, AnimatePresence } from 'framer-motion'
 import { cn } from '@vfs/utils'
-import { useEffect, useRef } from 'react'
+import { useCallback, useEffect, useRef } from 'react'
 import { X } from 'lucide-react'
 
 interface DialogProps {
@@ -25,8 +25,56 @@ const contentVariants = {
   exit: { opacity: 0, y: 16, scale: 0.96, transition: { duration: 0.2 } },
 }
 
+/** Query all focusable elements within a container */
+function getFocusableElements(container: HTMLElement): HTMLElement[] {
+  const selectors = [
+    'a[href]', 'button:not([disabled])', 'input:not([disabled])',
+    'select:not([disabled])', 'textarea:not([disabled])',
+    '[tabindex]:not([tabindex="-1"])',
+  ]
+  return Array.from(container.querySelectorAll<HTMLElement>(selectors.join(',')))
+}
+
 export function Dialog({ open, onClose, title, children, className }: DialogProps) {
   const contentRef = useRef<HTMLDivElement>(null)
+  const triggerRef = useRef<HTMLElement | null>(null)
+
+  // Store the triggering element on open
+  useEffect(() => {
+    if (open) {
+      triggerRef.current = document.activeElement as HTMLElement
+    }
+    return () => {
+      // Restore focus on close — but only if dialog was open
+      if (!open && triggerRef.current && typeof triggerRef.current.focus === 'function') {
+        triggerRef.current.focus()
+        triggerRef.current = null
+      }
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open])
+
+  // Focus trap
+  const handleKeyDown = useCallback((e: KeyboardEvent) => {
+    if (e.key !== 'Tab' || !contentRef.current) return
+
+    const focusable = getFocusableElements(contentRef.current)
+    if (focusable.length === 0) {
+      e.preventDefault()
+      return
+    }
+
+    const first = focusable[0]
+    const last = focusable[focusable.length - 1]
+
+    if (e.shiftKey && document.activeElement === first) {
+      e.preventDefault()
+      last.focus()
+    } else if (!e.shiftKey && document.activeElement === last) {
+      e.preventDefault()
+      first.focus()
+    }
+  }, [])
 
   useEffect(() => {
     if (!open) return
@@ -36,8 +84,27 @@ export function Dialog({ open, onClose, title, children, className }: DialogProp
     }
 
     document.addEventListener('keydown', handleEscape)
-    return () => document.removeEventListener('keydown', handleEscape)
-  }, [open, onClose])
+    document.addEventListener('keydown', handleKeyDown)
+    return () => {
+      document.removeEventListener('keydown', handleEscape)
+      document.removeEventListener('keydown', handleKeyDown)
+    }
+  }, [open, onClose, handleKeyDown])
+
+  // Auto-focus first element on open
+  useEffect(() => {
+    if (open && contentRef.current) {
+      const focusable = getFocusableElements(contentRef.current)
+      // Small RAF to let the animation start before focusing
+      requestAnimationFrame(() => {
+        if (focusable.length > 0) {
+          focusable[0].focus()
+        } else {
+          contentRef.current?.focus()
+        }
+      })
+    }
+  }, [open])
 
   useEffect(() => {
     if (open) {
@@ -67,12 +134,13 @@ export function Dialog({ open, onClose, title, children, className }: DialogProp
           />
           <motion.div
             ref={contentRef}
+            tabIndex={-1}
             variants={contentVariants}
             initial="hidden"
             animate="visible"
             exit="exit"
             className={cn(
-              'relative z-10 w-full max-w-lg rounded-xl border border-border-default bg-bg-surface p-6 shadow-xl',
+              'relative z-10 w-full max-w-lg rounded-xl border border-border-default bg-bg-surface p-6 shadow-xl outline-none',
               className,
             )}
           >

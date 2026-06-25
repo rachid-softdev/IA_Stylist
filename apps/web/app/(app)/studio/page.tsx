@@ -145,6 +145,8 @@ export default function StudioPage() {
     return () => window.removeEventListener('keydown', handleKeyDown)
   }, [isReady, isGenerating, resultUrl, handleGenerate, reset])
 
+  const step = !activePhoto ? 1 : !selectedGarment ? 2 : 3
+
   return (
     <motion.div
       className="animate-fade-in"
@@ -162,6 +164,31 @@ export default function StudioPage() {
         </p>
       </motion.div>
 
+      {/* Step indicator */}
+      <motion.div variants={item} className="mb-8 flex items-center gap-2">
+        {[1, 2, 3].map((s) => (
+          <div key={s} className="flex items-center gap-2">
+            <div
+              className={`flex h-6 w-6 items-center justify-center rounded-full text-2xs font-medium transition-all duration-300 ${
+                s <= step
+                  ? 'bg-accent-primary text-text-inverse'
+                  : 'bg-bg-elevated text-text-tertiary'
+              }`}
+            >
+              {s}
+            </div>
+            <span
+              className={`text-xs transition-all duration-300 ${
+                s === step ? 'text-text-primary font-medium' : 'text-text-tertiary'
+              }`}
+            >
+              {s === 1 ? 'Photo' : s === 2 ? 'Vêtement' : 'Génération'}
+            </span>
+            {s < 3 && <div className="mx-1 h-px w-6 bg-border-subtle" aria-hidden />}
+          </div>
+        ))}
+      </motion.div>
+
       {/* Main canvas */}
       <motion.div variants={item} className="grid gap-6 lg:grid-cols-2">
         {/* Left: Uploads */}
@@ -172,15 +199,31 @@ export default function StudioPage() {
             error={photoError}
           />
 
-          <GarmentSelector
-            selected={selectedGarment}
-            onSelect={handleGarmentSelect}
-          />
+          <motion.div
+            animate={{
+              opacity: activePhoto ? 1 : 0.45,
+              height: 'auto',
+            }}
+            transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+          >
+            <GarmentSelector
+              selected={selectedGarment}
+              onSelect={handleGarmentSelect}
+            />
+          </motion.div>
 
-          <CategorySelect
-            value={selectedCategory}
-            onChange={setCategory}
-          />
+          {selectedGarment && (
+            <motion.div
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+            >
+              <CategorySelect
+                value={selectedCategory}
+                onChange={setCategory}
+              />
+            </motion.div>
+          )}
         </div>
 
         {/* Right: Result */}
@@ -209,7 +252,16 @@ export default function StudioPage() {
               </button>
             </div>
           ) : (
-            <div className="flex h-full min-h-[300px] items-center justify-center rounded-lg border border-dashed border-border-default p-8 text-center">
+            <motion.div
+              className="flex h-full min-h-[300px] items-center justify-center rounded-lg border border-dashed p-8 text-center"
+              animate={{
+                borderColor: isReady
+                  ? 'var(--accent-primary)'
+                  : 'var(--border-default)',
+                opacity: isReady ? 1 : 0.6,
+              }}
+              transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+            >
               <div>
                 <p className="text-text-secondary">
                   {!activePhoto
@@ -220,12 +272,19 @@ export default function StudioPage() {
                   }
                 </p>
               </div>
-            </div>
+            </motion.div>
           )}
 
           {/* Generate button */}
           {!isGenerating && !resultUrl && (
-            <div className="flex flex-col items-center gap-2">
+            <motion.div
+              className="flex flex-col items-center gap-2"
+              animate={{
+                opacity: isReady ? 1 : 0.5,
+                y: isReady ? 0 : 4,
+              }}
+              transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+            >
               <GenerateButton
                 onClick={handleGenerate}
                 disabled={!isReady || isGenerating}
@@ -236,7 +295,7 @@ export default function StudioPage() {
                   ⌘⏎ pour générer
                 </kbd>
               )}
-            </div>
+            </motion.div>
           )}
         </div>
       </motion.div>

@@ -117,6 +117,8 @@ export function TopSkusChart({ data, loading, error }: TopSkusChartProps) {
             fill={colors.accent}
             radius={[0, 3, 3, 0]}
             barSize={16}
+            animationDuration={800}
+            animationEasing="ease-out"
           />
         </BarChart>
       </ResponsiveContainer>
