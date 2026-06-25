@@ -1,9 +1,12 @@
 import { Progress } from '@/components/ui/progress'
+import { Button } from '@/components/ui/button'
+import { XCircle } from 'lucide-react'
 import type { JobStatus } from '@vfs/shared-types'
 
 interface JobProgressProps {
   jobId: string
   status: JobStatus | null
+  onCancel?: () => void
 }
 
 const statusMessages: Record<string, string> = {
@@ -13,9 +16,10 @@ const statusMessages: Record<string, string> = {
   error: 'Erreur lors de la génération',
 }
 
-export function JobProgress({ jobId, status }: JobProgressProps) {
+export function JobProgress({ jobId, status, onCancel }: JobProgressProps) {
   const message = statusMessages[status || 'queued'] || 'Préparation...'
   const isProcessing = status === 'processing'
+  const canCancel = status !== 'done' && status !== 'error' && status !== 'cancelled'
 
   return (
     <div
@@ -36,6 +40,17 @@ export function JobProgress({ jobId, status }: JobProgressProps) {
       <p className="mt-3 font-mono text-xs text-text-tertiary">
         Job #{jobId.slice(0, 8)}
       </p>
+      {canCancel && onCancel && (
+        <Button
+          variant="ghost"
+          size="sm"
+          className="mt-4"
+          iconLeft={<XCircle className="h-3.5 w-3.5" />}
+          onClick={onCancel}
+        >
+          Annuler
+        </Button>
+      )}
     </div>
   )
 }
