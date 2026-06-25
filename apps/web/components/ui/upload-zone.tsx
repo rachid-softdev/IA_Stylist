@@ -2,7 +2,7 @@
 
 import { cn } from '@vfs/utils'
 import { useCallback, useState, type DragEvent } from 'react'
-import { Upload, AlertCircle } from 'lucide-react'
+import { Camera, Upload, AlertCircle } from 'lucide-react'
 
 interface UploadZoneProps {
   onFile: (file: File) => void
@@ -63,6 +63,21 @@ export function UploadZone({
     input.click()
   }
 
+  const handleCameraCapture = (e: React.MouseEvent) => {
+    e.stopPropagation()
+    const input = document.createElement('input')
+    input.type = 'file'
+    input.accept = accept
+    input.capture = 'environment'
+    input.onchange = (e) => {
+      const file = (e.target as HTMLInputElement).files?.[0]
+      if (file) onFile(file)
+    }
+    input.click()
+  }
+
+  const isMobile = typeof window !== 'undefined' && 'ontouchstart' in window
+
   const isFileSelected = !!preview
 
   return (
@@ -108,6 +123,17 @@ export function UploadZone({
             </p>
             <p className="mt-1 text-xs text-text-tertiary">{description}</p>
           </div>
+          {/* Camera capture button (mobile only) */}
+          {isMobile && !error && (
+            <button
+              type="button"
+              onClick={handleCameraCapture}
+              className="flex items-center gap-2 rounded-md bg-accent-primary/10 px-4 py-2 text-xs font-medium text-accent-primary transition-colors hover:bg-accent-primary/20"
+            >
+              <Camera className="h-3.5 w-3.5" />
+              Prendre une photo
+            </button>
+          )}
           <p className="text-xs text-text-tertiary">
             JPEG, PNG, WebP — Max {maxSizeMB}MB
           </p>

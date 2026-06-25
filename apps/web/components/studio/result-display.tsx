@@ -3,16 +3,20 @@
 import { Button } from '@/components/ui/button'
 import { Download, RefreshCw, Film } from 'lucide-react'
 import { useToastStore } from '@/stores/toast-store'
+import { useSwipe } from '@/hooks/use-swipe'
 
 interface ResultDisplayProps {
   imageUrl: string
   metadata: Record<string, unknown> | null
   onTryAgain: () => void
   jobId: string | null
+  onSwipeLeft?: () => void
+  onSwipeRight?: () => void
 }
 
-export function ResultDisplay({ imageUrl, metadata: _metadata, onTryAgain, jobId }: ResultDisplayProps) {
+export function ResultDisplay({ imageUrl, metadata: _metadata, onTryAgain, jobId, onSwipeLeft, onSwipeRight }: ResultDisplayProps) {
   const { addToast } = useToastStore()
+  const swipeHandlers = useSwipe({ onSwipeLeft, onSwipeRight })
 
   const handleDownload = async () => {
     try {
@@ -42,7 +46,7 @@ export function ResultDisplay({ imageUrl, metadata: _metadata, onTryAgain, jobId
   }
 
   return (
-    <div className="animate-result-reveal">
+    <div className="animate-result-reveal" {...swipeHandlers}>
       <div className="relative overflow-hidden rounded-lg border border-border-default bg-bg-surface">
         <img
           src={imageUrl}

@@ -11,6 +11,7 @@ import { GenerateButton } from '@/components/studio/generate-button'
 import { ResultDisplay } from '@/components/studio/result-display'
 import { JobProgress } from '@/components/studio/job-progress'
 import { CatalogBrowser } from '@/components/studio/catalog-browser'
+import { OnboardingTour } from '@/components/studio/onboarding-tour'
 import { useGenerationJob } from '@/hooks/use-generation-job'
 import { api } from '@/lib/api'
 import type { GarmentCategory, JobStatus } from '@vfs/shared-types'
@@ -320,11 +321,13 @@ export default function StudioPage() {
       <motion.div variants={item} className="grid gap-6 md:grid-cols-2 lg:grid-cols-2">
         {/* Left: Uploads */}
         <div className="space-y-6">
-          <PhotoUploadZone
-            preview={activePhoto?.url || null}
-            onUpload={handlePhotoUpload}
-            error={photoError}
-          />
+          <div data-tour="photo-upload">
+            <PhotoUploadZone
+              preview={activePhoto?.url || null}
+              onUpload={handlePhotoUpload}
+              error={photoError}
+            />
+          </div>
 
           <motion.div
             animate={{
@@ -383,10 +386,12 @@ export default function StudioPage() {
                 )}
               </div>
             ) : (
-              <GarmentSelector
-                selected={selectedGarment}
-                onSelect={handleGarmentSelect}
-              />
+              <div data-tour="garment-select">
+                <GarmentSelector
+                  selected={selectedGarment}
+                  onSelect={handleGarmentSelect}
+                />
+              </div>
             )}
           </motion.div>
 
@@ -396,10 +401,12 @@ export default function StudioPage() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
             >
-              <CategorySelect
-                value={selectedCategory}
-                onChange={setCategory}
-              />
+              <div data-tour="category-select">
+                <CategorySelect
+                  value={selectedCategory}
+                  onChange={setCategory}
+                />
+              </div>
             </motion.div>
           )}
         </div>
@@ -519,15 +526,18 @@ export default function StudioPage() {
           ) : (
             <>
               {isGenerating && currentJobId ? (
-                <JobProgress jobId={currentJobId} status={jobStatus} onCancel={handleCancelGeneration} />
+                <div data-tour="result-area">
+                  <JobProgress jobId={currentJobId} status={jobStatus} onCancel={handleCancelGeneration} />
+                </div>
               ) : resultUrl ? (
-                <ResultDisplay
-                  imageUrl={resultUrl}
-                  metadata={resultMetadata}
-                  onTryAgain={reset}
-                  jobId={currentJobId}
-                />
-              ) : errorMessage ? (
+                <div data-tour="result-area">
+                  <ResultDisplay
+                    imageUrl={resultUrl}
+                    metadata={resultMetadata}
+                    onTryAgain={reset}
+                    jobId={currentJobId}
+                  />
+                </div> errorMessage ? (
                 <div className="rounded-lg border border-status-error/30 bg-status-error/5 p-6 text-center">
                   <p className="text-status-error font-medium">Génération échouée</p>
                   <p className="mt-2 text-sm text-text-secondary">{errorMessage}</p>
@@ -569,6 +579,7 @@ export default function StudioPage() {
               {!isGenerating && !resultUrl && (
                 <motion.div
                   className="flex flex-col items-center gap-2"
+                  data-tour="generate-button"
                   animate={{
                     opacity: isReady ? 1 : 0.5,
                     y: isReady ? 0 : 4,
@@ -607,6 +618,8 @@ export default function StudioPage() {
           setShowBatchCatalog(false)
         }}
       />
+
+      <OnboardingTour enabled={!isGenerating && !resultUrl && !activePhoto && !selectedGarment} />
     </motion.div>
   )
 }
