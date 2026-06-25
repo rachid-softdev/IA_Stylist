@@ -1,5 +1,4 @@
 import { Progress } from '@/components/ui/progress'
-import { Spinner } from '@/components/ui/spinner'
 import type { JobStatus } from '@vfs/shared-types'
 
 interface JobProgressProps {
@@ -16,8 +15,6 @@ const statusMessages: Record<string, string> = {
 
 export function JobProgress({ jobId, status }: JobProgressProps) {
   const message = statusMessages[status || 'queued'] || 'Préparation...'
-  const percent = status === 'queued' ? 10 : status === 'processing' ? 60 : status === 'done' ? 100 : 0
-
   const isProcessing = status === 'processing'
 
   return (
@@ -25,16 +22,14 @@ export function JobProgress({ jobId, status }: JobProgressProps) {
       role="status"
       aria-label="Génération en cours"
       aria-live="polite"
-      className={`rounded-lg border border-border-default bg-bg-surface p-8 text-center transition-all duration-300 ${
-        isProcessing ? 'animate-pulse-glow border-accent-primary/30' : ''
+      className={`rounded-lg border bg-bg-surface p-8 text-center transition-all duration-300 ${
+        isProcessing
+          ? 'border-accent-primary/30 animate-pulse-glow'
+          : 'border-border-default'
       }`}
     >
-      <div className="mb-6 flex justify-center">
-        <Spinner size="md" />
-      </div>
       <Progress
-        value={percent}
-        max={100}
+        indeterminate
         label={message}
         className="mx-auto max-w-xs"
       />

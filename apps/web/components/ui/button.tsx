@@ -4,17 +4,17 @@ import { forwardRef, type ButtonHTMLAttributes } from 'react'
 import { Loader2 } from 'lucide-react'
 
 const buttonVariants = cva(
-  'inline-flex items-center justify-center gap-2 rounded-md font-medium transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-primary focus-visible:ring-offset-2 focus-visible:ring-offset-bg-base disabled:pointer-events-none disabled:opacity-40 active:scale-[0.97]',
+  'inline-flex items-center justify-center gap-2 rounded-md font-medium transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-primary focus-visible:ring-offset-2 focus-visible:ring-offset-bg-base disabled:pointer-events-none disabled:opacity-40',
   {
     variants: {
       variant: {
         primary:
-          'bg-accent-primary text-text-inverse hover:brightness-110 shadow-sm',
+          'bg-accent-primary text-text-inverse hover:brightness-110 shadow-sm active:scale-[0.97] hover:scale-[1.03]',
         secondary:
-          'border border-border-default text-text-primary hover:bg-bg-overlay',
+          'border border-border-default text-text-primary hover:bg-bg-overlay active:scale-[0.97] hover:scale-[1.02]',
         ghost: 'text-text-secondary hover:text-text-primary hover:bg-bg-overlay',
         destructive:
-          'text-status-error border border-status-error hover:bg-status-error/10',
+          'text-status-error border border-status-error hover:bg-status-error/10 active:scale-[0.97]',
         loading:
           'bg-accent-primary text-text-inverse opacity-70 cursor-wait',
       },

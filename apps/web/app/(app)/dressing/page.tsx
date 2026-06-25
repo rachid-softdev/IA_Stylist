@@ -98,15 +98,16 @@ export default function DressingPage() {
         </div>
       ) : jobs.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-20 text-center">
-          <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-accent-primary/10">
+          <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-accent-primary/10 animate-float">
             <Camera className="h-6 w-6 text-accent-primary" />
           </div>
-          <h2 className="text-xl font-heading text-text-primary">Créez votre premier look</h2>
-          <p className="mt-2 text-text-secondary">
-            Rendez-vous dans le Studio pour essayer un vêtement
+          <h2 className="text-xl font-heading text-text-primary">Votre dressing est vide</h2>
+          <p className="mt-2 max-w-sm text-text-secondary leading-relaxed">
+            Créez votre premier look dans le Studio — choisissez un vêtement, 
+            téléchargez votre photo, et laissez la magie opérer.
           </p>
           <Button variant="primary" className="mt-6" onClick={() => window.location.href = '/studio'}>
-            Aller au Studio
+            Ouvrir le Studio
           </Button>
         </div>
       ) : (

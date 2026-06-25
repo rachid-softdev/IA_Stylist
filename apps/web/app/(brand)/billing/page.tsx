@@ -4,6 +4,7 @@ import { motion } from 'framer-motion'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { useToastStore } from '@/stores/toast-store'
+import { FileText } from 'lucide-react'
 
 const container = {
   hidden: { opacity: 0 },
@@ -51,8 +52,12 @@ export default function BillingPage() {
       <motion.div variants={item}>
         <Card>
           <h3 className="mb-4 font-heading text-sm text-text-primary">Historique des factures</h3>
-          <div className="py-8 text-center">
-            <p className="text-sm text-text-secondary">Aucune facture pour le moment</p>
+          <div className="py-12 text-center">
+            <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-accent-primary/10 animate-float">
+              <FileText className="h-5 w-5 text-accent-primary" />
+            </div>
+            <p className="font-heading text-sm text-text-primary">Aucune facture</p>
+            <p className="mt-1 text-xs text-text-secondary">Vos factures apparaîtront ici après votre premier paiement</p>
           </div>
         </Card>
       </motion.div>

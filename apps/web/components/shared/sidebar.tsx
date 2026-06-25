@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { cn } from '@vfs/utils'
 import { ThemeToggle } from '@/components/ui/theme-toggle'
+import { HelpDialog } from '@/components/ui/help-dialog'
 import { Avatar } from '@/components/ui/avatar'
 import {
   Camera,
@@ -43,7 +44,7 @@ export function Sidebar() {
       {/* Sidebar */}
       <aside
         className={cn(
-          'fixed inset-y-0 left-0 z-40 flex w-60 flex-col border-r border-border-subtle bg-bg-surface transition-transform duration-200 lg:translate-x-0',
+          'sidebar-panel fixed inset-y-0 left-0 z-40 flex w-60 flex-col border-r border-border-subtle bg-bg-surface transition-transform duration-200 lg:translate-x-0',
           isOpen ? 'translate-x-0' : '-translate-x-full',
         )}
       >
@@ -116,12 +117,15 @@ export function Sidebar() {
 
           <div className="mt-2 flex items-center justify-between rounded-md px-3 py-1">
             <ThemeToggle />
-            <Link
-              href="/settings"
-              className="rounded p-2 text-text-tertiary hover:bg-bg-overlay hover:text-text-primary"
-            >
-              <Settings className="h-4 w-4" />
-            </Link>
+            <div className="flex items-center gap-1">
+              <HelpDialog />
+              <Link
+                href="/settings"
+                className="rounded p-2 text-text-tertiary hover:bg-bg-overlay hover:text-text-primary"
+              >
+                <Settings className="h-4 w-4" />
+              </Link>
+            </div>
           </div>
         </div>
       </aside>

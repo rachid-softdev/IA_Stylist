@@ -128,9 +128,12 @@ export default function CatalogPage() {
             </div>
           ) : (
             <div className="py-20 text-center">
-              <Package className="mx-auto h-8 w-8 text-text-tertiary" />
-              <p className="mt-3 text-sm text-text-secondary">Aucun produit</p>
-              <Button size="sm" className="mt-4" onClick={() => setShowAdd(true)}>
+              <div className="animate-float mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-accent-primary/10">
+                <Package className="h-6 w-6 text-accent-primary" />
+              </div>
+              <p className="font-heading text-lg text-text-primary">Catalogue vide</p>
+              <p className="mt-1 text-sm text-text-secondary">Ajoutez vos premiers produits pour commencer</p>
+              <Button size="sm" className="mt-6" onClick={() => setShowAdd(true)}>
                 Ajouter un produit
               </Button>
             </div>

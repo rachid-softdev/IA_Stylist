@@ -148,32 +148,39 @@ function HeroSection() {
 }
 
 /* ─── Social Proof ─────────────────────────────────────────── */
-const stats = [
-  { value: '30-40%', label: 'Retours évités' },
-  { value: '10×', label: 'Moins cher qu\'un shooting' },
-  { value: '< 60s', label: 'Par génération' },
-  { value: '4.9★', label: 'Satisfaction utilisateur' },
-]
 
 function SocialProof() {
   return (
-    <section className="border-y border-border-subtle bg-bg-surface/50" aria-label="Chiffres clés">
-      <div className="mx-auto max-w-grid px-4 py-10 md:py-14">
-        <div className="grid grid-cols-2 gap-8 md:grid-cols-4">
-          {stats.map((stat, i) => (
-            <motion.div
-              key={stat.label}
-              className="text-center"
-              initial={{ opacity: 0, y: 16 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: '-60px' }}
-              transition={{ duration: 0.5, delay: i * 0.08, ease: [0.16, 1, 0.3, 1] }}
-            >
-              <p className="font-display text-2xl text-text-primary md:text-3xl">{stat.value}</p>
-              <p className="mt-1 text-xs text-text-secondary">{stat.label}</p>
-            </motion.div>
-          ))}
-        </div>
+    <section className="border-y border-border-subtle bg-bg-surface/50" aria-label="Témoignage">
+      <div className="mx-auto max-w-grid px-4 py-12 md:py-16">
+        <motion.figure
+          initial={{ opacity: 0, y: 12 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: '-80px' }}
+          transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+          className="mx-auto max-w-2xl text-center"
+        >
+          <svg className="mx-auto h-8 w-8 text-accent-primary/30 mb-6" fill="currentColor" viewBox="0 0 32 32" aria-hidden>
+            <path d="M10 8c-3.3 0-6 2.7-6 6v10h10V14H8c0-1.1.9-2 2-2V8zm14 0c-3.3 0-6 2.7-6 6v10h10V14h-6c0-1.1.9-2 2-2V8z"/>
+          </svg>
+          <blockquote>
+            <p className="text-lg leading-relaxed text-text-primary md:text-xl">
+              &ldquo;On a réduit nos retours de <em className="text-accent-primary not-italic font-medium">30%</em> en deux mois.
+              Un shooting coûtait <em className="text-accent-primary not-italic font-medium">10× moins cher</em> et prenait
+              <em className="text-accent-primary not-italic font-medium"> moins de 60 secondes</em> par produit.
+              C&rsquo;est devenu notre outil quotidien.&rdquo;
+            </p>
+          </blockquote>
+          <figcaption className="mt-6 flex items-center justify-center gap-3">
+            <div className="h-10 w-10 rounded-full bg-accent-primary/20 flex items-center justify-center text-sm font-medium text-accent-primary">
+              ML
+            </div>
+            <div className="text-left">
+              <span className="block text-sm text-text-primary">Marion Lefèvre</span>
+              <span className="block text-xs text-text-tertiary">Directrice Marketing, Maison&nbsp;Claire</span>
+            </div>
+          </figcaption>
+        </motion.figure>
       </div>
     </section>
   )
@@ -185,6 +192,7 @@ const features = [
     icon: Camera,
     title: 'Essayage Photo',
     desc: 'Visualisez n\'importe quel vêtement sur votre propre photo en quelques secondes. Résultat photoréaliste, pas de filtre.',
+    highlight: true,
   },
   {
     icon: Zap,
@@ -204,6 +212,8 @@ const features = [
 ]
 
 function FeaturesSection() {
+  const [primary, ...rest] = features
+
   return (
     <section id="features" className="py-20 md:py-28" aria-labelledby="features-heading">
       <div className="mx-auto max-w-grid px-4">
@@ -226,33 +236,63 @@ function FeaturesSection() {
           </p>
         </motion.div>
 
-        <div className="mt-12 grid gap-5 md:grid-cols-2 lg:grid-cols-4">
-          {features.map((feature, i) => {
-            const Icon = feature.icon
-            return (
-              <motion.article
-                key={feature.title}
-                className="group relative rounded-xl border border-border-default bg-bg-surface p-6 transition-all duration-300 hover:border-border-strong hover:shadow-md"
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, margin: '-60px' }}
-                transition={{ duration: 0.5, delay: i * 0.08, ease: [0.16, 1, 0.3, 1] }}
-              >
-                {/* Hover glow */}
-                <div className="pointer-events-none absolute -inset-px rounded-xl opacity-0 transition-opacity duration-300 group-hover:opacity-100" aria-hidden>
-                  <div className="absolute inset-0 rounded-xl ring-1 ring-accent-primary/20" />
+        <div className="mt-12 grid gap-5 md:grid-cols-2">
+          {/* Primary feature card — larger, spans full height */}
+          <motion.article
+            className="group relative row-span-2 flex flex-col justify-center rounded-xl border border-border-default bg-gradient-to-br from-bg-surface to-bg-elevated p-8 transition-all duration-300 hover:border-border-strong hover:shadow-md"
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: '-60px' }}
+            transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+          >
+            <div className="mb-5 flex h-12 w-12 items-center justify-center rounded-xl bg-accent-primary/10 ring-1 ring-accent-primary/20">
+              <Camera className="h-6 w-6 text-accent-primary" />
+            </div>
+            <h3 className="font-display text-xl text-text-primary">{primary.title}</h3>
+            <p className="mt-3 max-w-md text-sm leading-relaxed text-text-secondary">{primary.desc}</p>
+            <div className="mt-6 grid grid-cols-3 gap-6 border-t border-border-subtle pt-6">
+              {[
+                { label: 'Résolution', value: '4K HD' },
+                { label: 'Temps', value: '&lt; 60s' },
+                { label: 'Réalisme', value: '98%' },
+              ].map((s) => (
+                <div key={s.label}>
+                  <p className="text-xs text-text-tertiary uppercase tracking-widest">{s.label}</p>
+                  <p className="mt-0.5 font-display text-lg text-accent-primary">{s.value}</p>
                 </div>
+              ))}
+            </div>
+          </motion.article>
 
-                <div className="relative">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-accent-primary/10">
-                    <Icon className="h-5 w-5 text-accent-primary" />
+          {/* Secondary features — 2-col grid inside */}
+          <div className="grid gap-5 content-start">
+            {rest.map((feature, i) => {
+              const Icon = feature.icon
+              return (
+                <motion.article
+                  key={feature.title}
+                  className="group relative rounded-xl border border-border-default bg-bg-surface p-6 transition-all duration-300 hover:border-border-strong hover:shadow-md"
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true, margin: '-60px' }}
+                  transition={{ duration: 0.5, delay: i * 0.08, ease: [0.16, 1, 0.3, 1] }}
+                >
+                  <div className="pointer-events-none absolute -inset-px rounded-xl opacity-0 transition-opacity duration-300 group-hover:opacity-100" aria-hidden>
+                    <div className="absolute inset-0 rounded-xl ring-1 ring-accent-primary/20" />
                   </div>
-                  <h3 className="mt-4 font-heading text-base text-text-primary">{feature.title}</h3>
-                  <p className="mt-2 text-sm leading-relaxed text-text-secondary">{feature.desc}</p>
-                </div>
-              </motion.article>
-            )
-          })}
+                  <div className="relative flex items-start gap-4">
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-accent-primary/10">
+                      <Icon className="h-5 w-5 text-accent-primary" />
+                    </div>
+                    <div>
+                      <h3 className="font-heading text-base text-text-primary">{feature.title}</h3>
+                      <p className="mt-1 text-sm leading-relaxed text-text-secondary">{feature.desc}</p>
+                    </div>
+                  </div>
+                </motion.article>
+              )
+            })}
+          </div>
         </div>
       </div>
     </section>
