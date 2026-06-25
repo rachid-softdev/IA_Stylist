@@ -80,6 +80,7 @@
 /* ─────────────── Base Styles ────────────────────────────── */
 * {
   box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
 }
 
 html {
@@ -94,6 +95,16 @@ body {
   font-family: 'Söhne', 'Aktiv Grotesk', 'Helvetica Neue', sans-serif;
   font-size: 0.9375rem;
   line-height: 1.5;
+}
+
+/* Touch interaction optimizations */
+button, a, input, select, textarea, [role="button"], [tabindex]:not([tabindex="-1"]) {
+  touch-action: manipulation;
+}
+
+/* Prevent pull-to-refresh on scrollable panels */
+.scroll-contain {
+  overscroll-behavior: contain;
 }
 
 /* ─────────────── Scrollbar ──────────────────────────────── */

@@ -140,7 +140,7 @@ export function Dialog({ open, onClose, title, children, className }: DialogProp
             animate="visible"
             exit="exit"
             className={cn(
-              'relative z-10 w-full max-w-lg rounded-xl border border-border-default bg-bg-surface p-6 shadow-xl outline-none',
+              'relative z-10 w-full max-w-lg rounded-xl border border-border-default bg-bg-surface p-4 shadow-xl outline-none sm:p-6',
               className,
             )}
           >

@@ -52,7 +52,7 @@ export function ResultDisplay({ imageUrl, metadata: _metadata, onTryAgain, jobId
 
         {/* Overlay actions */}
         <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-bg-base/90 via-bg-base/40 to-transparent p-4 pt-12">
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between gap-2 flex-wrap">
             <Button
               variant="secondary"
               size="sm"
