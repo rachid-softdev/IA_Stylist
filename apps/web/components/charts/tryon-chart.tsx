@@ -18,19 +18,7 @@ interface TryonChartProps {
   error?: string | null
 }
 
-const fallbackData = [
-  { date: 'Sem 1', count: 45 },
-  { date: 'Sem 2', count: 82 },
-  { date: 'Sem 3', count: 68 },
-  { date: 'Sem 4', count: 110 },
-  { date: 'Sem 5', count: 94 },
-  { date: 'Sem 6', count: 145 },
-  { date: 'Sem 7', count: 128 },
-  { date: 'Sem 8', count: 190 },
-]
-
 export function TryonChart({ data, loading, error }: TryonChartProps) {
-  const chartData = data ?? fallbackData
 
   // Resolve CSS variable values for charts
   const colors = useMemo(() => {
@@ -68,7 +56,7 @@ export function TryonChart({ data, loading, error }: TryonChartProps) {
   if (!data || data.length === 0) {
     return (
       <div className="flex h-48 items-center justify-center rounded bg-bg-elevated">
-        <p className="text-sm text-text-tertiary">Aucune donnée this semaine</p>
+        <p className="text-sm text-text-tertiary">Aucun essayage cette semaine</p>
       </div>
     )
   }
@@ -76,7 +64,7 @@ export function TryonChart({ data, loading, error }: TryonChartProps) {
   return (
     <div className="h-48">
       <ResponsiveContainer width="100%" height="100%">
-        <LineChart data={chartData} margin={{ top: 4, right: 8, left: -16, bottom: 0 }}>
+        <LineChart data={data} margin={{ top: 4, right: 8, left: -16, bottom: 0 }}>
           <CartesianGrid strokeDasharray="3 3" stroke={colors.grid} vertical={false} />
           <XAxis
             dataKey="date"

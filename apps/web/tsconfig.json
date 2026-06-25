@@ -1,16 +1,31 @@
 {
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
-    "lib": ["dom", "dom.iterable", "esnext"],
+    "lib": [
+      "dom",
+      "dom.iterable",
+      "esnext"
+    ],
     "noEmit": true,
     "jsx": "preserve",
     "incremental": true,
-    "plugins": [{ "name": "next" }],
+    "plugins": [
+      {
+        "name": "next"
+      }
+    ],
     "paths": {
-      "@/*": ["./*"],
-      "@vfs/shared-types": ["../../packages/shared-types/src"],
-      "@vfs/utils": ["../../packages/utils/src"]
-    }
+      "@/*": [
+        "./*"
+      ],
+      "@vfs/shared-types": [
+        "../../packages/shared-types/src"
+      ],
+      "@vfs/utils": [
+        "../../packages/utils/src"
+      ]
+    },
+    "allowJs": true
   },
   "include": [
     "next-env.d.ts",
@@ -20,5 +35,7 @@
     "../../packages/shared-types/src/**/*.ts",
     "../../packages/utils/src/**/*.ts"
   ],
-  "exclude": ["node_modules"]
+  "exclude": [
+    "node_modules"
+  ]
 }

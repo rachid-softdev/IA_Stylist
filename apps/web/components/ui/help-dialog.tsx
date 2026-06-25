@@ -2,7 +2,6 @@
 
 import { useState } from 'react'
 import { Dialog } from '@/components/ui/dialog'
-import { Button } from '@/components/ui/button'
 import { HelpCircle, Camera, Sparkles, CreditCard, BookOpen } from 'lucide-react'
 import Link from 'next/link'
 

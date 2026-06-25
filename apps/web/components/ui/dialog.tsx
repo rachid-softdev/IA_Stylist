@@ -64,8 +64,8 @@ export function Dialog({ open, onClose, title, children, className }: DialogProp
       return
     }
 
-    const first = focusable[0]
-    const last = focusable[focusable.length - 1]
+    const first = focusable[0] as HTMLElement
+    const last = focusable[focusable.length - 1] as HTMLElement
 
     if (e.shiftKey && document.activeElement === first) {
       e.preventDefault()
@@ -98,7 +98,7 @@ export function Dialog({ open, onClose, title, children, className }: DialogProp
       // Small RAF to let the animation start before focusing
       requestAnimationFrame(() => {
         if (focusable.length > 0) {
-          focusable[0].focus()
+          focusable[0]!.focus()
         } else {
           contentRef.current?.focus()
         }
