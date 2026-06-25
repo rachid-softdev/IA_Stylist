@@ -79,10 +79,10 @@ export function CatalogBrowser({ open, onClose, onSelect, multiSelect, selectedI
             className="w-full rounded-md border border-border-default bg-bg-surface py-2 pl-9 pr-3 text-sm text-text-primary placeholder:text-text-tertiary focus:border-accent-primary focus:outline-none"
           />
         </div>
-        <div className="flex gap-2 overflow-x-auto">
+        <div className="flex gap-2 overflow-x-auto scroll-contain">
           <button
             onClick={() => setCategoryFilter('all')}
-            className={`whitespace-nowrap rounded-md px-3 py-1.5 text-xs font-medium transition-colors ${
+            className={`whitespace-nowrap rounded-md px-3 py-2 text-xs font-medium transition-colors ${
               categoryFilter === 'all'
                 ? 'bg-accent-primary text-text-inverse'
                 : 'bg-bg-elevated text-text-secondary hover:text-text-primary'
@@ -94,7 +94,7 @@ export function CatalogBrowser({ open, onClose, onSelect, multiSelect, selectedI
             <button
               key={cat}
               onClick={() => setCategoryFilter(cat)}
-              className={`whitespace-nowrap rounded-md px-3 py-1.5 text-xs font-medium transition-colors ${
+              className={`whitespace-nowrap rounded-md px-3 py-2 text-xs font-medium transition-colors ${
                 categoryFilter === cat
                   ? 'bg-accent-primary text-text-inverse'
                   : 'bg-bg-elevated text-text-secondary hover:text-text-primary'

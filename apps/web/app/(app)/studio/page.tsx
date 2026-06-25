@@ -317,7 +317,7 @@ export default function StudioPage() {
       </motion.div>
 
       {/* Main canvas */}
-      <motion.div variants={item} className="grid gap-6 lg:grid-cols-2">
+      <motion.div variants={item} className="grid gap-6 md:grid-cols-2 lg:grid-cols-2">
         {/* Left: Uploads */}
         <div className="space-y-6">
           <PhotoUploadZone
@@ -445,7 +445,7 @@ export default function StudioPage() {
                     {batchJobs.map((job) => (
                       <div key={job.garmentId} className="rounded-lg border border-border-default overflow-hidden">
                         {job.status === 'done' && job.resultUrl ? (
-                          <img src={job.resultUrl} alt={job.garmentName} className="w-full aspect-[3/4] object-cover" />
+                          <img src={job.resultUrl} alt={job.garmentName} loading="lazy" className="w-full aspect-[3/4] object-cover" />
                         ) : (
                           <div className="flex aspect-[3/4] items-center justify-center bg-bg-elevated p-4 text-center">
                             <p className="text-2xs text-status-error">{job.errorMessage || 'Échec'}</p>
