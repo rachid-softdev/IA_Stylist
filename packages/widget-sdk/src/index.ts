@@ -211,6 +211,34 @@
     `
   }
 
+  async function pollJob(jobId: string): Promise<string> {
+    return new Promise((resolve, reject) => {
+      const interval = setInterval(async () => {
+        try {
+          const resp = await fetch(`${API_URL}/widget/jobs/${jobId}`)
+          if (!resp.ok) {
+            clearInterval(interval)
+            reject(new Error('Failed to poll job'))
+            return
+          }
+          const result = await resp.json()
+          const status = result.data?.status
+          if (status === 'done') {
+            clearInterval(interval)
+            resolve(result.data.result_url)
+          } else if (status === 'error') {
+            clearInterval(interval)
+            reject(new Error(result.data?.error_message || 'Generation failed'))
+          }
+          // 'queued' or 'processing' — keep polling
+        } catch {
+          clearInterval(interval)
+          reject(new Error('Polling error'))
+        }
+      }, 2000)
+    })
+  }
+
   async function handleFileSelect(this: HTMLInputElement, e: Event) {
     const file = (e.target as HTMLInputElement).files?.[0]
     if (!file) return
@@ -232,9 +260,12 @@
       if (!resp.ok) throw new Error('Generation failed')
 
       const result = await resp.json()
-      if (result.data?.result_url) {
-        showResult(result.data.result_url)
-      }
+      const jobId = result.data?.job_id
+      if (!jobId) throw new Error('No job ID received')
+
+      // Poll for result
+      const imageUrl = await pollJob(jobId)
+      showResult(imageUrl)
     } catch (err) {
       if (!modal) return
       const uploadArea = modal.querySelector('#vfs-upload-area') as HTMLElement
