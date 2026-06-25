@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Button } from '@/components/ui/button'
@@ -58,6 +58,7 @@ export default function OnboardingPage() {
   // Step 3: generation
   const [generating, setGenerating] = useState(false)
   const [resultUrl, setResultUrl] = useState<string | null>(null)
+  const [generatingJobId, setGeneratingJobId] = useState<string | null>(null)
 
   const handleFileSelect = (slotKey: string, file: File) => {
     const preview = URL.createObjectURL(file)
@@ -103,19 +104,42 @@ export default function OnboardingPage() {
     setGenerating(true)
     setStep(3)
     try {
-      const res = await api.post<{ result_url: string }>('/onboarding/generate', {
+      const res = await api.post<{ job_id: string }>('/onboarding/generate', {
         photos: photoKeys,
         garment_sku: selectedGarment,
       })
-      setResultUrl(res.data.result_url)
-      addToast({ type: 'success', title: 'Look créé !', message: 'Votre premier look est prêt.' })
+      setGeneratingJobId(res.data.job_id)
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'Erreur lors de la génération'
       addToast({ type: 'error', title: 'Erreur', message })
-    } finally {
       setGenerating(false)
     }
   }
+
+  // Poll for job result
+  useEffect(() => {
+    if (!generatingJobId) return
+    const interval = setInterval(async () => {
+      try {
+        const res = await api.get<{ status: string; result_url?: string }>(`/generate/jobs/${generatingJobId}`)
+        if (res.data.status === 'done' && res.data.result_url) {
+          setResultUrl(res.data.result_url)
+          setGenerating(false)
+          setGeneratingJobId(null)
+          addToast({ type: 'success', title: 'Look créé !', message: 'Votre premier look est prêt.' })
+          clearInterval(interval)
+        } else if (res.data.status === 'error') {
+          addToast({ type: 'error', title: 'Erreur', message: 'La génération a échoué' })
+          setGenerating(false)
+          setGeneratingJobId(null)
+          clearInterval(interval)
+        }
+      } catch {
+        // keep polling
+      }
+    }, 2000)
+    return () => clearInterval(interval)
+  }, [generatingJobId, addToast])
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-bg-base px-4">

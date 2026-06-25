@@ -121,6 +121,7 @@ app.include_router(webhooks.router, prefix="/v1/webhooks", tags=["Webhooks"])
 app.include_router(stylist.router, prefix="/v1/stylist", tags=["AI Stylist"])
 app.include_router(ws.router, prefix="/v1", tags=["WebSocket"])
 app.include_router(widget.router, prefix="/v1/widget", tags=["Widget"])
+app.include_router(onboarding.router, prefix="/v1/onboarding", tags=["Onboarding"])
 
 
 @app.get("/health")

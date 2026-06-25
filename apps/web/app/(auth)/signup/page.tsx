@@ -75,7 +75,7 @@ export default function SignupPage() {
     try {
       await api.post('/auth/signup', { email, password })
       addToast({ type: 'success', title: 'Compte créé !', message: 'Bienvenue sur VFS' })
-      router.push('/studio')
+      router.push('/onboarding')
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'Inscription impossible'
       addToast({ type: 'error', title: 'Erreur d\'inscription', message })
