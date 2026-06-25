@@ -11,6 +11,23 @@
   let config: WidgetConfig | null = null
   let modal: HTMLDivElement | null = null
   let isOpen = false
+  let cachedToken: string | null = null
+  let tokenExpiry: number | null = null
+
+  async function getToken(): Promise<string> {
+    if (cachedToken && tokenExpiry && Date.now() < tokenExpiry) {
+      return cachedToken
+    }
+    const resp = await fetch(`${API_URL}/widget/auth`, {
+      method: 'POST',
+      body: new URLSearchParams({ api_key: config!.apiKey }),
+    })
+    if (!resp.ok) throw new Error('Authentication failed')
+    const data = await resp.json()
+    cachedToken = data.data.access_token
+    tokenExpiry = Date.now() + (data.data.expires_in - 60) * 1000  // refresh 1min before expiry
+    return cachedToken!
+  }
 
   function getTheme() {
     return {
@@ -185,7 +202,17 @@
       const addToCart = resultArea.querySelector('#vfs-add-to-cart')
       addToCart?.addEventListener('click', () => {
         trackEvent('add_to_cart', { imageUrl })
-        closeModal()
+
+        // Try Shopify AJAX add-to-cart
+        const variantId = config?.variantId
+        if (variantId && typeof Shopify !== 'undefined' && Shopify?.AJAX?.addItemToCart) {
+          Shopify.AJAX.addItemToCart(variantId, 1, () => {
+            closeModal()
+          })
+        } else {
+          // Fallback: redirect to cart URL or just close
+          closeModal()
+        }
       })
     }
 
@@ -246,14 +273,15 @@
     showLoading()
 
     try {
+      const token = await getToken()
       const formData = new FormData()
       formData.append('file', file)
-      formData.append('api_key', config?.apiKey || '')
       formData.append('product_id', config?.productId || '')
       formData.append('sku', config?.sku || '')
 
       const resp = await fetch(`${API_URL}/widget/generate`, {
         method: 'POST',
+        headers: { 'Authorization': `Bearer ${token}` },
         body: formData,
       })
 

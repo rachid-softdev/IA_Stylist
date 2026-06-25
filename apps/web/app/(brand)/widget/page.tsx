@@ -39,7 +39,7 @@ export default function WidgetConfigPage() {
   const apiKeyDisplay = activeKey ? `${activeKey.prefix}...` : null
 
   const scriptTag = activeKey
-    ? `<script src="https://cdn.vfs.ai/widget.js"
+    ? `<script src="https://cdn.vfs.ai/widget.js" async defer
   data-api-key="${activeKey.prefix}..."
   data-product-id="{{ product.id }}"
   data-sku="{{ variant.sku }}">
@@ -48,7 +48,7 @@ export default function WidgetConfigPage() {
 
   const shopifySnippet = activeKey
     ? `{% if product %}{% for variant in product.variants %}
-<script src="https://cdn.vfs.ai/widget.js"
+<script src="https://cdn.vfs.ai/widget.js" async defer
   data-api-key="${activeKey.prefix}..."
   data-product-id="{{ product.id }}"
   data-sku="{{ variant.sku }}"

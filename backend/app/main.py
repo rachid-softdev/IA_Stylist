@@ -15,7 +15,7 @@ from app.middleware.auth_middleware import AuthMiddleware
 from app.middleware.api_key import ApiKeyMiddleware
 from app.middleware.rate_limit import RateLimitMiddleware
 from app.middleware.csrf_middleware import CSRFMiddleware
-from app.routers import auth, upload, generate, credits, dressing, brands, catalog, analytics, webhooks, stylist, ws, widget
+from app.routers import auth, upload, generate, credits, dressing, brands, catalog, analytics, webhooks, stylist, ws, widget, onboarding
 
 settings = get_settings()
 
