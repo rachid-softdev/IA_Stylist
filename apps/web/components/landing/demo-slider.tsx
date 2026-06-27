@@ -1,5 +1,6 @@
 'use client'
 
+import Image from 'next/image'
 import { useCallback, useEffect, useRef, useState } from 'react'
 
 interface DemosliderProps {
@@ -109,11 +110,14 @@ export function Demoslider({
       onPointerLeave={() => setIsHovered(false)}
     >
       {/* Before image (full width) */}
-      <img
+      <Image
         src={beforeSrc}
         alt="Photo originale avant application du vêtement"
-        className="absolute inset-0 h-full w-full object-cover"
+        fill
+        className="object-cover"
+        sizes="(max-width: 768px) 90vw, 512px"
         draggable={false}
+        priority
       />
 
       {/* After image (clipped) */}
@@ -122,12 +126,16 @@ export function Demoslider({
         style={{ width: `${position}%` }}
         aria-hidden
       >
-        <img
+        <Image
           src={afterSrc}
           alt="Résultat après application du vêtement par IA"
-          className="absolute inset-0 h-full w-full object-cover"
+          width={0}
+          height={0}
+          sizes="100vw"
+          className="absolute inset-0 h-full object-cover"
           style={{ width: `${100 / (position / 100)}%` }}
           draggable={false}
+          unoptimized
         />
       </div>
 

@@ -1,5 +1,6 @@
 'use client'
 
+import Image from 'next/image'
 import { Button } from '@/components/ui/button'
 import { Download, RefreshCw, Film } from 'lucide-react'
 import { useToastStore } from '@/stores/toast-store'
@@ -47,11 +48,13 @@ export function ResultDisplay({ imageUrl, metadata: _metadata, onTryAgain, jobId
 
   return (
     <div className="animate-result-reveal" {...swipeHandlers}>
-      <div className="relative overflow-hidden rounded-lg border border-border-default bg-bg-surface">
-        <img
+      <div className="relative aspect-[3/4] overflow-hidden rounded-lg border border-border-default bg-bg-surface">
+        <Image
           src={imageUrl}
           alt="Try-on result"
-          className="w-full aspect-[3/4] object-cover"
+          fill
+          className="object-cover"
+          sizes="(max-width: 768px) 100vw, 50vw"
         />
 
         {/* Overlay actions */}

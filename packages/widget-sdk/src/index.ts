@@ -1,6 +1,7 @@
 (() => {
   const API_URL = 'https://api.vfs.ai/v1'
 
+
   interface WidgetConfig {
     apiKey: string
     productId: string
@@ -205,7 +206,9 @@
 
         // Try Shopify AJAX add-to-cart
         const variantId = config?.variantId
+        // @ts-expect-error - Shopify is a global injected by the Shopify storefront at runtime
         if (variantId && typeof Shopify !== 'undefined' && Shopify?.AJAX?.addItemToCart) {
+          // @ts-expect-error - Shopify is a global injected by the Shopify storefront at runtime
           Shopify.AJAX.addItemToCart(variantId, 1, () => {
             closeModal()
           })

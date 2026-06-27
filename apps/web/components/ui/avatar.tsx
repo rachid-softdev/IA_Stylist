@@ -1,3 +1,4 @@
+import Image from 'next/image'
 import { cn } from '@vfs/utils'
 
 interface AvatarProps {
@@ -8,6 +9,7 @@ interface AvatarProps {
 }
 
 export function Avatar({ src, fallback, size = 'md', className }: AvatarProps) {
+  const sizeMap = { sm: 32, md: 40, lg: 48 } as const
   const sizeClasses = {
     sm: 'h-8 w-8 text-xs',
     md: 'h-10 w-10 text-sm',
@@ -16,10 +18,13 @@ export function Avatar({ src, fallback, size = 'md', className }: AvatarProps) {
 
   if (src) {
     return (
-      <img
+      <Image
         src={src}
         alt={fallback || 'Avatar'}
+        width={sizeMap[size]}
+        height={sizeMap[size]}
         className={cn('rounded-full object-cover', sizeClasses[size], className)}
+        unoptimized
       />
     )
   }

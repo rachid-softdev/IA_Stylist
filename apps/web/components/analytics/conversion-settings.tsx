@@ -89,15 +89,15 @@ export function ConversionSettings() {
               <div className="grid grid-cols-3 gap-3 text-center">
                 <div>
                   <p className="text-xs text-text-secondary">Période</p>
-                  <p className="font-display text-sm text-text-primary">{latestEntry.period}</p>
+                  <p className="font-display text-sm text-text-primary">{latestEntry!.period}</p>
                 </div>
                 <div>
                   <p className="text-xs text-text-secondary">Commandes</p>
-                  <p className="font-display text-sm text-text-primary">{latestEntry.orders}</p>
+                  <p className="font-display text-sm text-text-primary">{latestEntry!.orders}</p>
                 </div>
                 <div>
                   <p className="text-xs text-text-secondary">Retours</p>
-                  <p className="font-display text-sm text-text-primary">{latestEntry.returns}</p>
+                  <p className="font-display text-sm text-text-primary">{latestEntry!.returns}</p>
                 </div>
               </div>
             </div>
@@ -160,7 +160,7 @@ export function ConversionSettings() {
               <p className="text-xs text-gen-done">Données enregistrées ✓</p>
             )}
             {mutation.isError && (
-              <p className="text-xs text-status-error">Erreur lors de l'enregistrement</p>
+              <p className="text-xs text-status-error">Erreur lors de l&apos;enregistrement</p>
             )}
             <Button
               type="submit"

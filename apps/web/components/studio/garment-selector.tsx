@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { useUpload } from '@/hooks/use-upload'
 import { useToastStore } from '@/stores/toast-store'
+import Image from 'next/image'
 import { Upload, Package } from 'lucide-react'
 import { CatalogBrowser } from './catalog-browser'
 import type { GarmentCategory } from '@vfs/shared-types'
@@ -66,9 +67,11 @@ export function GarmentSelector({ selected, onSelect }: GarmentSelectorProps) {
       {selected ? (
         <div className="relative rounded-lg border border-border-default bg-bg-surface p-4">
           <div className="flex items-center gap-4">
-            <img
+            <Image
               src={selected.image_url}
               alt={selected.name || 'Vêtement'}
+              width={80}
+              height={80}
               className="h-20 w-20 rounded-md object-cover"
             />
             <div>
@@ -95,9 +98,11 @@ export function GarmentSelector({ selected, onSelect }: GarmentSelectorProps) {
         <div className="rounded-lg border border-dashed border-border-default p-8 text-center">
           {uploadPreview ? (
             <div className="space-y-3">
-              <img
+              <Image
                 src={uploadPreview}
                 alt="Preview"
+                width={160}
+                height={160}
                 className="mx-auto h-40 w-40 rounded-md object-cover"
               />
               <p className="text-sm text-text-secondary">

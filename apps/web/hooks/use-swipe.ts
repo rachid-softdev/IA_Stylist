@@ -14,13 +14,17 @@ export function useSwipe({ onSwipeLeft, onSwipeRight }: SwipeHandlers) {
   const touchStartY = useRef(0)
 
   const onTouchStart = useCallback((e: React.TouchEvent) => {
-    touchStartX.current = e.touches[0].clientX
-    touchStartY.current = e.touches[0].clientY
+    const touch = e.touches[0]
+    if (!touch) return
+    touchStartX.current = touch.clientX
+    touchStartY.current = touch.clientY
   }, [])
 
   const onTouchEnd = useCallback((e: React.TouchEvent) => {
-    const diffX = e.changedTouches[0].clientX - touchStartX.current
-    const diffY = e.changedTouches[0].clientY - touchStartY.current
+    const touch = e.changedTouches[0]
+    if (!touch) return
+    const diffX = touch.clientX - touchStartX.current
+    const diffY = touch.clientY - touchStartY.current
 
     // Ignore vertical swipes
     if (Math.abs(diffY) > Math.abs(diffX)) return
