@@ -15,6 +15,7 @@ import { OnboardingTour } from '@/components/studio/onboarding-tour'
 import { useGenerationJob } from '@/hooks/use-generation-job'
 import { api } from '@/lib/api'
 import type { GarmentCategory, JobStatus } from '@vfs/shared-types'
+import Image from 'next/image'
 import { X, Package, Plus } from 'lucide-react'
 
 const container = {
@@ -450,9 +451,9 @@ export default function StudioPage() {
                   </div>
                   <div className="grid grid-cols-2 gap-4">
                     {batchJobs.map((job) => (
-                      <div key={job.garmentId} className="rounded-lg border border-border-default overflow-hidden">
+                      <div key={job.garmentId} className="relative aspect-[3/4] rounded-lg border border-border-default overflow-hidden">
                         {job.status === 'done' && job.resultUrl ? (
-                          <img src={job.resultUrl} alt={job.garmentName} loading="lazy" className="w-full aspect-[3/4] object-cover" />
+                          <Image src={job.resultUrl} alt={job.garmentName} fill className="object-cover" sizes="(max-width: 768px) 50vw, 50vw" />
                         ) : (
                           <div className="flex aspect-[3/4] items-center justify-center bg-bg-elevated p-4 text-center">
                             <p className="text-2xs text-status-error">{job.errorMessage || 'Échec'}</p>
@@ -537,7 +538,8 @@ export default function StudioPage() {
                     onTryAgain={reset}
                     jobId={currentJobId}
                   />
-                </div> errorMessage ? (
+                </div>
+              ) : errorMessage ? (
                 <div className="rounded-lg border border-status-error/30 bg-status-error/5 p-6 text-center">
                   <p className="text-status-error font-medium">Génération échouée</p>
                   <p className="mt-2 text-sm text-text-secondary">{errorMessage}</p>

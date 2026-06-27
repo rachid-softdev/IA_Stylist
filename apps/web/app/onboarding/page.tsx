@@ -4,6 +4,7 @@ import { useState, useRef, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Button } from '@/components/ui/button'
+import Image from 'next/image'
 import { ArrowRight, ArrowLeft, Camera, Check, ImageUp } from 'lucide-react'
 import { api } from '@/lib/api'
 import { useToastStore } from '@/stores/toast-store'
@@ -193,13 +194,16 @@ export default function OnboardingPage() {
                     key={slot.key}
                     type="button"
                     onClick={() => handleSlotClick(slot.key)}
-                    className="group aspect-[3/4] rounded-lg border border-dashed border-border-default bg-bg-surface p-2 flex flex-col items-center justify-center gap-2 hover:border-accent-primary transition-colors overflow-hidden"
+                    className="group relative aspect-[3/4] rounded-lg border border-dashed border-border-default bg-bg-surface p-2 flex flex-col items-center justify-center gap-2 hover:border-accent-primary transition-colors overflow-hidden"
                   >
                     {photoPreviews[slot.key] ? (
-                      <img
+                      <Image
                         src={photoPreviews[slot.key]}
                         alt={slot.label}
-                        className="h-full w-full object-cover rounded"
+                        fill
+                        className="object-cover rounded"
+                        sizes="(max-width: 768px) 33vw, 150px"
+                        unoptimized
                       />
                     ) : (
                       <>
@@ -303,11 +307,13 @@ export default function OnboardingPage() {
                   <h1 className="mt-4 font-display text-2xl text-text-primary">
                     Votre look est prêt !
                   </h1>
-                  <div className="mt-6 mx-auto max-w-xs aspect-[3/4] rounded-lg overflow-hidden border border-border-default">
-                    <img
+                  <div className="relative mt-6 mx-auto max-w-xs aspect-[3/4] rounded-lg overflow-hidden border border-border-default">
+                    <Image
                       src={resultUrl}
                       alt="Votre look généré"
-                      className="h-full w-full object-cover"
+                      fill
+                      className="object-cover"
+                      sizes="(max-width: 768px) 80vw, 320px"
                     />
                   </div>
                   <Button

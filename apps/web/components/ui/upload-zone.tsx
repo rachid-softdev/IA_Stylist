@@ -1,5 +1,6 @@
 'use client'
 
+import Image from 'next/image'
 import { cn } from '@vfs/utils'
 import { useCallback, useState, type DragEvent } from 'react'
 import { Camera, Upload, AlertCircle } from 'lucide-react'
@@ -101,10 +102,13 @@ export function UploadZone({
     >
       {preview ? (
         <div className="relative w-full h-full">
-          <img
+          <Image
             src={preview}
             alt="Preview"
-            className="w-full h-full object-contain rounded-md max-h-[300px]"
+            fill
+            className="object-contain rounded-md"
+            sizes="(max-width: 768px) 100vw, 300px"
+            unoptimized
           />
           <div className="absolute bottom-2 right-2 rounded-md bg-bg-base/80 px-2 py-1 text-xs text-text-secondary">
             Cliquez pour remplacer

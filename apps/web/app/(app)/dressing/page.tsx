@@ -9,6 +9,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Dialog } from '@/components/ui/dialog'
+import Image from 'next/image'
 import { Download, Trash2, Search, Filter, Camera } from 'lucide-react'
 import { useToastStore } from '@/stores/toast-store'
 import type { GenerationJob } from '@vfs/shared-types'
@@ -118,15 +119,16 @@ export default function DressingPage() {
             .map((job) => (
               <div
                 key={job.id}
-                className="group relative overflow-hidden rounded-lg border border-border-default bg-bg-surface transition-colors duration-200 hover:border-border-strong hover:shadow-md animate-card-in"
+                className="group relative aspect-square overflow-hidden rounded-lg border border-border-default bg-bg-surface transition-colors duration-200 hover:border-border-strong hover:shadow-md animate-card-in"
               >
                 {job.result_url ? (
-                  <img
+                  <Image
                     src={job.result_url}
                     alt={(job as any).garment_name ? `Look ${(job as any).garment_name}` : 'Look généré'}
-                    className="aspect-square w-full object-cover"
-                    loading="lazy"
-                    onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }}
+                    fill
+                    className="object-cover"
+                    sizes="(max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw"
+                    onError={(e) => { (e.target as HTMLElement).style.display = 'none' }}
                   />
                 ) : (
                   <div className="aspect-square w-full bg-bg-elevated" />

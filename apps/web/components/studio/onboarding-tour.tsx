@@ -1,8 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import Joyride, { type Step, type CallBackProps, STATUS } from 'react-joyride'
-import { useQueryClient } from '@tanstack/react-query'
+import { Joyride, type Step, type EventData, STATUS } from 'react-joyride'
 
 const TOUR_STORAGE_KEY = 'vfs-tour-completed'
 
@@ -13,20 +12,15 @@ interface OnboardingTourProps {
 
 export function OnboardingTour({ enabled }: OnboardingTourProps) {
   const [run, setRun] = useState(false)
-  const queryClient = useQueryClient()
 
   useEffect(() => {
-    if (enabled) {
-      const completed = localStorage.getItem(TOUR_STORAGE_KEY)
-      if (!completed) {
-        // Small delay so the page renders first
-        const timer = setTimeout(() => setRun(true), 800)
-        return () => clearTimeout(timer)
-      }
-    }
+    if (!enabled || localStorage.getItem(TOUR_STORAGE_KEY)) return
+    // Small delay so the page renders first
+    const timer = setTimeout(() => setRun(true), 800)
+    return () => clearTimeout(timer)
   }, [enabled])
 
-  const handleJoyrideCallback = async (data: CallBackProps) => {
+  const handleJoyrideCallback = async (data: EventData) => {
     const { status, type } = data
     if (type === 'tour:end' || status === STATUS.FINISHED || status === STATUS.SKIPPED) {
       localStorage.setItem(TOUR_STORAGE_KEY, 'true')
@@ -49,7 +43,7 @@ export function OnboardingTour({ enabled }: OnboardingTourProps) {
       content: 'Bienvenue dans votre studio virtuel ! Découvrez comment créer votre premier look en quelques clics.',
       title: 'Studio VFS',
       placement: 'center',
-      disableBeacon: true,
+      skipBeacon: true,
     },
     {
       target: '[data-tour="photo-upload"]',
@@ -88,8 +82,10 @@ export function OnboardingTour({ enabled }: OnboardingTourProps) {
       steps={steps}
       run={run}
       continuous
-      showProgress
-      showSkipButton
+      options={{
+        showProgress: true,
+        buttons: ['back', 'close', 'primary', 'skip'],
+      }}
       locale={{
         back: 'Retour',
         close: 'Fermer',
@@ -98,17 +94,14 @@ export function OnboardingTour({ enabled }: OnboardingTourProps) {
         skip: 'Passer',
       }}
       styles={{
-        options: {
-          primaryColor: '#D4A853',
-          backgroundColor: '#111111',
-          textColor: '#F5F0E8',
-          arrowColor: '#111111',
-        },
+        tooltip: { backgroundColor: '#111111', color: '#F5F0E8' },
         buttonClose: { display: 'none' },
+        buttonPrimary: { backgroundColor: '#D4A853' },
         tooltipContainer: { textAlign: 'left' },
         tooltipContent: { padding: '12px 0' },
+        arrow: { color: '#111111' },
       }}
-      callback={handleJoyrideCallback}
+      onEvent={handleJoyrideCallback}
     />
   )
 }

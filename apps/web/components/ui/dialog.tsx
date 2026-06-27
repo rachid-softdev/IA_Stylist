@@ -11,6 +11,7 @@ interface DialogProps {
   title?: string
   children: React.ReactNode
   className?: string
+  size?: 'sm' | 'md' | 'lg' | 'xl'
 }
 
 const overlayVariants = {
@@ -35,7 +36,14 @@ function getFocusableElements(container: HTMLElement): HTMLElement[] {
   return Array.from(container.querySelectorAll<HTMLElement>(selectors.join(',')))
 }
 
-export function Dialog({ open, onClose, title, children, className }: DialogProps) {
+const sizeClasses: Record<string, string> = {
+  sm: 'max-w-sm',
+  md: 'max-w-md',
+  lg: 'max-w-lg',
+  xl: 'max-w-xl',
+}
+
+export function Dialog({ open, onClose, title, children, className, size = 'lg' }: DialogProps) {
   const contentRef = useRef<HTMLDivElement>(null)
   const triggerRef = useRef<HTMLElement | null>(null)
 
@@ -140,7 +148,8 @@ export function Dialog({ open, onClose, title, children, className }: DialogProp
             animate="visible"
             exit="exit"
             className={cn(
-              'relative z-10 w-full max-w-lg rounded-xl border border-border-default bg-bg-surface p-4 shadow-xl outline-none sm:p-6',
+              sizeClasses[size],
+              'relative z-10 w-full rounded-xl border border-border-default bg-bg-surface p-4 shadow-xl outline-none sm:p-6',
               className,
             )}
           >
