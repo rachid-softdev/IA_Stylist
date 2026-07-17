@@ -12,6 +12,10 @@ const nextConfig = {
         protocol: 'https',
         hostname: 'cdn.vfs.ai',
       },
+      {
+        protocol: 'https',
+        hostname: 'images.unsplash.com',
+      },
     ],
   },
   headers: async () => [
