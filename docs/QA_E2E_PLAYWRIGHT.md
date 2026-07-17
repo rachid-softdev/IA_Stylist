@@ -1,6 +1,6 @@
 ﻿# QA end-to-end avec Playwright (IA_Stylist)
 
-Runbook de test E2E manuel/automatisÃ© pour $WebDir (Next.js 15.0.0, monorepo pnpm/Turborepo),
+Runbook de test E2E manuel/automatisÃ© pour $WebDir (Next.js, monorepo pnpm/Turborepo),
 inspirÃ© de la dÃ©marche mise en place sur Motivygo. Ce document est volontairement **lÃ©ger** :
 il consigne le smoke test reproductible + la mÃ©thode pour lancer une campagne E2E complÃ¨te
 avec playwright-cli, sans supposer l'existence d'un bypass d'auth.
@@ -50,8 +50,8 @@ $r = Invoke-WebRequest -Uri "http://localhost:$port/" -UseBasicParsing
 
 ### RÃ©sultat du smoke (2026-07-17)
 - Serveur : dÃ©marre et atteint Ready (voir log).
-- GET / â†’ **HTTP 500 (InternalServerError)**.
-GET / renvoie HTTP 500 (InternalServerError). Le serveur demarre (Ready in ~5s, next dev --port 3000). Cause probable : middleware ou page racine dependante d un env/DB non configure en local. A investiguer.
+- GET / â†’ **HTTP 200**.
+GET / renvoie HTTP 200 (titre 'VFS'). CORRIGE: next/image rejetait images.unsplash.com non configure -> 500. Ajoute aux remotePatterns.
 
 > âš ï¸ Sur une autre machine, le port peut diffÃ©rer (3000 occupÃ© â†’ 3001/3002â€¦). Toujours
 > lire le port rÃ©el dans le log du serveur.
@@ -60,7 +60,7 @@ GET / renvoie HTTP 500 (InternalServerError). Le serveur demarre (Ready in ~5s, 
 
 ## 3. Authentification (Ã  documenter par repo)
 
-Aucun bypass d auth dev trouve dans apps/web. Comme / renvoie 500, meme les pages publiques ne sont pas servies tant que le probleme de middleware/env n est pas resolu.
+Aucun bypass d auth dev trouve.
 
 ---
 
@@ -119,4 +119,4 @@ apps/web/scripts/qa\        # (Ã  crÃ©er si campagne complÃ¨te)
 â”œâ”€â”€ driver2.ps1        # campagne N pages (meta/console/a11y/screenshot)
 â””â”€â”€ urls.txt           # URLs publiques dÃ©couvertes
 `
- FINDING: serveur boot mais racine 500 (env/DB). Voir section 2.
+ 
